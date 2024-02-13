@@ -50,10 +50,10 @@ def check_vin(vin: str):
             result = {
                 'source': 'cache',
                 'vin': v[0],
-                'actual_dc': dc[0],
-                'dc_date': dc[2],
-                'dc_expiration': dc[3],
-                'dc_history': v[2]
+                'actualDc': dc[0],
+                'dcDate': dc[2],
+                'dcExpiration': dc[3],
+                'dcHistory': v[2]
             }
             return result
         else:
@@ -131,10 +131,10 @@ def insert_vin(vin: dict):
                 result = {
                     'source':'cache',
                     'vin':fv[0],
-                    'actual_dc':ad[0],
-                    'dc_date':ad[2],
-                    'dc_expiration':ad[3],
-                    'dc_history':fv[2]
+                    'actualDc':ad[0],
+                    'dcDate':ad[2],
+                    'dcExpiration':ad[3],
+                    'dcHistory':fv[2]
                 }
                 return result
             else:
@@ -151,10 +151,10 @@ def insert_vin(vin: dict):
                 result = {
                     'source': 'api:new-dcs',
                     'vin': fv[0],
-                    'actual_dc': vin['dcNumber'],
-                    'dc_date': vin['dcDate'],
-                    'dc_expiration': vin['dcExpirationDate'],
-                    'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
+                    'actualDc': vin['dcNumber'],
+                    'dcDate': vin['dcDate'],
+                    'dcExpiration': vin['dcExpirationDate'],
+                    'dcHistory': [dc['dcNumber'] for dc in vin['previousDcs']]
                 }
                 return result
     else:
@@ -189,10 +189,10 @@ def insert_vin(vin: dict):
         result = {
             'source': 'api:new-all',
             'vin': vin['body'],
-            'actual_dc': vin['dcNumber'],
-            'dc_date': vin['dcDate'],
-            'dc_expiration': vin['dcExpirationDate'],
-            'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
+            'actualDc': vin['dcNumber'],
+            'dcDate': vin['dcDate'],
+            'dcExpiration': vin['dcExpirationDate'],
+            'dcHistory': [dc['dcNumber'] for dc in vin['previousDcs']]
         }
         print('Result done')
         return result
