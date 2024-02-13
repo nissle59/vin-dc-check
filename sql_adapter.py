@@ -21,7 +21,9 @@ def connect_to_db():
 
 
 def convert_to_ts(s:str):
-    return datetime.datetime.timestamp(datetime.datetime.strptime(s,'%Y-%m-%d'))*1000
+    dt = datetime.datetime.strptime(s,'%Y-%m-%d')
+    return psycopg2.Date(dt.year, dt.month, dt.day)
+    #return datetime.datetime.timestamp(datetime.datetime.strptime(s,'%Y-%m-%d'))*1000
 
 def find_vin(vin: str):
     conn = connect_to_db()
