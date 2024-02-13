@@ -23,6 +23,7 @@ class Anticaptcha():
         }
         r = requests.post(self.uin, data=data)
         if r:
+            print(r.text)
             buf = r.text.split('|')
             status = buf[0]
             self.id = buf[1]
