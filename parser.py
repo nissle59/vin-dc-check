@@ -1,3 +1,5 @@
+import time
+
 import requests
 import json
 from anticaptcha import Anticaptcha
@@ -45,15 +47,20 @@ class VinDcCheck:
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             r = self.session.post(self.dc_check_url, data=params)
-            print(r.status_code)
-            # try:
-            res = r.json()
-            print(json.dumps(res,ensure_ascii=False,indent=2))
-            res = res.get('RequestResult').get('diagnosticCards')
-            sql_adapter.insert_vins(res)
-            # except:
-            #     res = None
-            #     return res
+            #print(r.status_code)
+            try:
+                res = r.json()
+                if res.get('code', 200) in ['201', 201]:
+                    time.sleep(1)
+                    print('Captcha error, retrying...')
+                    self.check_vin_code(vin_code)
+                    #return None
+                #print(json.dumps(res,ensure_ascii=False,indent=2))
+                res = res.get('RequestResult').get('diagnosticCards')
+                sql_adapter.insert_vins(res)
+            except:
+                res = None
+                return res
 
     def process_vin(self, vin_code):
         vin = sql_adapter.check_vin(vin_code)

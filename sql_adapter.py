@@ -44,7 +44,7 @@ def find_vin(vin: str):
 def check_vin(vin: str):
     v = find_vin(vin)
     if v:
-        print(v)
+        #print(v)
         dc = find_dc(v[1])
         if dc[3] > datetime.datetime.now():
             result = {
@@ -82,15 +82,15 @@ def insert_dc(dc: dict):
 
 
 def insert_dcs(dcs: list):
-    print('Try to connect to DB')
+    #print('Try to connect to DB')
     conn = connect_to_db()
-    print('Connected to DB')
+    #print('Connected to DB')
     for dc in dcs:
-        print('Try to insert')
+        #print('Try to insert')
         _insert_dc_no_commit(conn, dc)
-    print('Commiting..')
+    #print('Commiting..')
     conn.commit()
-    print('Committed.. Close connection')
+    #print('Committed.. Close connection')
     conn.close()
 
 
@@ -120,21 +120,21 @@ def find_dc(dcNumber: str):
 
 
 def insert_vin(vin: dict):
-    print(vin['body'])
+    #print(vin['body'])
     fv = find_vin(vin['body'])
-    print(fv)
+    #print(fv)
     if fv:
-        ad = find_dc(fv['actual_dc'])
+        ad = find_dc(fv[1])
         print(ad)
         if ad:
-            if ad['dcExpirationDate'] > datetime.datetime.timestamp(datetime.datetime.now()):
+            if ad[3] > datetime.datetime.now():
                 result = {
                     'source':'cache',
-                    'vin':fv['vin'],
-                    'actual_dc':ad['dc_number'],
-                    'dc_date':ad['dc_date'],
-                    'dc_expiration':ad['dc_expiration'],
-                    'dc_history':fv['dc_history']
+                    'vin':fv[0],
+                    'actual_dc':ad[0],
+                    'dc_date':ad[2],
+                    'dc_expiration':ad[3],
+                    'dc_history':fv[2]
                 }
                 return result
             else:
@@ -150,7 +150,7 @@ def insert_vin(vin: dict):
                 update_vin(vin)
                 result = {
                     'source': 'api:new-dcs',
-                    'vin': fv['vin'],
+                    'vin': fv[0],
                     'actual_dc': vin['dcNumber'],
                     'dc_date': vin['dcDate'],
                     'dc_expiration': vin['dcExpirationDate'],
@@ -165,25 +165,25 @@ def insert_vin(vin: dict):
             "dcNumber": vin.get('dcNumber', ''),
             "dcDate": vin['dcDate']
         }
-        print('dc_act')
-        print(dc_act)
+        #print('dc_act')
+        #print(dc_act)
         insert_dcs(dcs)
         insert_dc(dc_act)
 
-        print('Try to connect to DB')
+        #print('Try to connect to DB')
         conn = connect_to_db()
-        print('Connected to DB')
+        #print('Connected to DB')
         cursor = conn.cursor()
         q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
         # print('Converting dt...')
         # dc_act['dcDate'] = convert_to_ts(dc_act['dcDate'])
         # dc_act['dcExpirationDate'] = convert_to_ts(dc_act['dcExpirationDate'])
         item_tuple = (vin['body'], dc_act['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']])
-        print('Execute vin_cache upd...')
+        #print('Execute vin_cache upd...')
         cursor.execute(q, item_tuple)
-        print('Commiting...')
+        #print('Commiting...')
         conn.commit()
-        print('Done')
+        #print('Done')
         cursor.close()
 
         result = {
