@@ -58,7 +58,8 @@ class VinDcCheck:
                 #print(json.dumps(res,ensure_ascii=False,indent=2))
                 res = res.get('RequestResult').get('diagnosticCards')
                 sql_adapter.insert_vins(res)
-            except:
+            except Exception as e:
+                print(e)
                 res = None
                 return res
 
