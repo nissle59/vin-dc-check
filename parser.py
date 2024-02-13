@@ -33,7 +33,10 @@ class VinDcCheck:
         captcha = self.get_captcha()
         if captcha:
             c_token = captcha.get('token')
-            c_code = int(captcha.get('code'))
+            try:
+                c_code = int(captcha.get('code'))
+            except:
+                c_code = 0
             params = {
                 'vin' : vin_code,
                 'checkType' : 'diagnostic',
