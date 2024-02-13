@@ -97,10 +97,7 @@ def _insert_dc_no_commit(conn, dc: dict):
     print('Creating cursor')
     cursor = conn.cursor()
     q = "INSERT INTO dcs VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
-    print('Converting dt...')
-    dc['dcDate'] = convert_to_ts(dc['dcDate'])
-    dc['dcExpirationDate'] = convert_to_ts(dc['dcExpirationDate'])
-    item_tuple = (dc['dcNumber'], dc['odometerValue'], dc['dcDate'], dc['dcExpirationDate'])
+    item_tuple = (dc['dcNumber'], dc['odometerValue'],convert_to_ts(dc['dcDate']),convert_to_ts(dc['dcExpirationDate']))
     print('Execute insertion')
     cursor.execute(q, item_tuple)
     cursor.close()
@@ -154,8 +151,8 @@ def insert_vin(vin: dict):
                     'source': 'api:new-dcs',
                     'vin': fv['vin'],
                     'actual_dc': vin['dcNumber'],
-                    'dc_date': convert_to_ts(vin['dcDate']),
-                    'dc_expiration': convert_to_ts(vin['dcExpirationDate']),
+                    'dc_date': vin['dcDate'],
+                    'dc_expiration': vin['dcExpirationDate'],
                     'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
                 }
                 return result
@@ -177,9 +174,9 @@ def insert_vin(vin: dict):
         print('Connected to DB')
         cursor = conn.cursor()
         q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
-        print('Converting dt...')
-        dc_act['dcDate'] = convert_to_ts(dc_act['dcDate'])
-        dc_act['dcExpirationDate'] = convert_to_ts(dc_act['dcExpirationDate'])
+        # print('Converting dt...')
+        # dc_act['dcDate'] = convert_to_ts(dc_act['dcDate'])
+        # dc_act['dcExpirationDate'] = convert_to_ts(dc_act['dcExpirationDate'])
         item_tuple = (vin['body'], dc_act['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']])
         print('Execute vin_cache upd...')
         cursor.execute(q, item_tuple)
@@ -192,8 +189,8 @@ def insert_vin(vin: dict):
             'source': 'api:new-all',
             'vin': vin['body'],
             'actual_dc': vin['dcNumber'],
-            'dc_date': convert_to_ts(vin['dcDate']),
-            'dc_expiration': convert_to_ts(vin['dcExpirationDate']),
+            'dc_date': vin['dcDate'],
+            'dc_expiration': vin['dcExpirationDate'],
             'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
         }
         print('Result done')
