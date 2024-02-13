@@ -202,3 +202,19 @@ def insert_vins(vins: list):
     results = []
     for vin in vins:
         results.append(insert_vin(vin))
+
+
+def get_setting(setting_name: str):
+    conn = connect_to_db()
+    cursor = conn.cursor()
+    q = "SELECT value FROM settings WHERE setting_name = %s"
+    item_tuple = (setting_name,)
+    cursor.execute(q, item_tuple)
+    res = cursor.fetchone()[0]
+    cursor.close()
+    if len(res) > 0:
+        conn.close()
+        return res[0]
+    else:
+        conn.close()
+        return None
