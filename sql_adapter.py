@@ -87,11 +87,14 @@ def insert_dcs(dcs: list):
 
 
 def _insert_dc_no_commit(conn, dc: dict):
+    print('Creating cursor')
     cursor = conn.cursor()
     q = "INSERT INTO dcs (dc_number, odo_value, dc_date, dc_expiration) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
+    print('Converting dt...')
     dc['dcDate'] = datetime.datetime.timestamp(datetime.datetime.strptime( dc['dcDate'],'%Y-%m-%d'))
     dc['dcExpirationDate'] = datetime.datetime.timestamp(datetime.datetime.strptime(dc['dcExpirationDate'], '%Y-%m-%d'))
     item_tuple = (dc['dcNumber'], dc['odometerValue'], dc['dcDate'], dc['dcExpirationDate'])
+    print('Execute insertion')
     cursor.execute(q, item_tuple)
 
 
