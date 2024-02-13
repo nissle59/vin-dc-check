@@ -22,7 +22,7 @@ app.add_middleware(
 @app.get("/getdc")
 async def getdc(vin):
     VDCP = parser.VinDcCheck()
-    res = await VDCP.process_vin(vin)
+    res = VDCP.process_vin(vin)
     err = {
         "status": "error"
     }
