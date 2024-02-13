@@ -44,7 +44,9 @@ class VinDcCheck:
             r = self.session.post(self.dc_check_url, data=params)
             print(r.status_code)
             try:
-                res = r.json().get('RequestResult').get('diagnosticCards')
+                res = r.json()
+                print(json.dumps(res,ensure_ascii=False,indent=2))
+                res = res.get('RequestResult').get('diagnosticCards')
                 sql_adapter.insert_vins(res)
             except:
                 res = None
