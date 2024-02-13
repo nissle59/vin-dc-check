@@ -45,15 +45,15 @@ def check_vin(vin: str):
     v = find_vin(vin)
     if v:
         print(v)
-        dc = find_dc(v['actual_dc'])
-        if dc['dc_expiration'] > datetime.datetime.timestamp(datetime.datetime.now()):
+        dc = find_dc(v[1])
+        if dc[3] > convert_to_ts(datetime.datetime.now()):
             result = {
                 'source': 'cache',
-                'vin': v['vin'],
-                'actual_dc': dc['dc_number'],
-                'dc_date': dc['dc_date'],
-                'dc_expiration': dc['dc_expiration'],
-                'dc_history': v['dc_history']
+                'vin': v[0],
+                'actual_dc': dc[0],
+                'dc_date': dc[2],
+                'dc_expiration': dc[3],
+                'dc_history': v[2]
             }
             return result
         else:
