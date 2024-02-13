@@ -2,7 +2,7 @@ import psycopg2
 import datetime
 
 DATABASE = {
-    'host': 'localhost',
+    'host': 'db.local',
     'port': 5432,
     'user': 'postgres',
     'password': 'psqlpass',
