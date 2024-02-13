@@ -46,7 +46,7 @@ def check_vin(vin: str):
     if v:
         print(v)
         dc = find_dc(v[1])
-        if convert_to_ts(dc[3].strftime('%Y-%m-%d')) > convert_to_ts(datetime.datetime.now().strftime('%Y-%m-%d')):
+        if dc[3] > datetime.datetime.now():
             result = {
                 'source': 'cache',
                 'vin': v[0],
