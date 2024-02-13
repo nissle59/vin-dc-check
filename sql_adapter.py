@@ -74,10 +74,15 @@ def insert_dc(dc: dict):
 
 
 def insert_dcs(dcs: list):
+    print('Try to connect to DB')
     conn = connect_to_db()
+    print('Connected to DB')
     for dc in dcs:
+        print('Try to insert')
         _insert_dc_no_commit(conn, dc)
+    print('Commiting..')
     conn.commit()
+    print('Committed.. Close connection')
     conn.close()
 
 
@@ -156,15 +161,21 @@ def insert_vin(vin: dict):
         insert_dcs(dcs)
         insert_dc(dc_act)
 
+        print('Try to connect to DB')
         conn = connect_to_db()
+        print('Connected to DB')
         cursor = conn.cursor()
         q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
+        print('Converting dt...')
         dc_act['dcDate'] = datetime.datetime.timestamp(datetime.datetime.strptime(dc_act['dcDate'], '%Y-%m-%d'))
         dc_act['dcExpirationDate'] = datetime.datetime.timestamp(
             datetime.datetime.strptime(dc_act['dcExpirationDate'], '%Y-%m-%d'))
         item_tuple = (vin['body'], dc_act['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']])
+        print('Execute vin_cache upd...')
         cursor.execute(q, item_tuple)
+        print('Commiting...')
         conn.commit()
+        print('Done')
         cursor.close()
 
         result = {
@@ -175,7 +186,7 @@ def insert_vin(vin: dict):
             'dc_expiration': datetime.datetime.timestamp(datetime.datetime.strptime(vin['dcExpirationDate'], '%Y-%m-%d')),
             'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
         }
-
+        print('Result done')
         return result
 
 
