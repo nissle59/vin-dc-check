@@ -23,7 +23,7 @@ app.add_middleware(
 async def getdc(vin):
     VDCP = parser.VinDcCheck()
     try:
-        res = json.dumps(vin, indent=4, sort_keys=True, default=str)
+        res = json.dumps(VDCP.process_vin(vin), indent=4, sort_keys=True, default=str)
     except:
         res = None
     #res = VDCP.process_vin(vin)
