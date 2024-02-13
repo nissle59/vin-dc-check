@@ -21,6 +21,8 @@ class Anticaptcha():
             'body': b64image,
             'key': self.token
         }
+        print(data)
+        print(self.token)
         r = requests.post(self.uin, data=data)
         if r:
             print(r.text)
