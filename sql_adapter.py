@@ -20,6 +20,9 @@ def connect_to_db():
     return conn
 
 
+def convert_to_ts(s:str):
+    return datetime.datetime.timestamp(datetime.datetime.strptime(s,'%Y-%m-%d'))*1000
+
 def find_vin(vin: str):
     conn = connect_to_db()
     cursor = conn.cursor()
@@ -93,8 +96,8 @@ def _insert_dc_no_commit(conn, dc: dict):
     cursor = conn.cursor()
     q = "INSERT INTO dcs VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
     print('Converting dt...')
-    dc['dcDate'] = datetime.datetime.timestamp(datetime.datetime.strptime( dc['dcDate'],'%Y-%m-%d'))
-    dc['dcExpirationDate'] = datetime.datetime.timestamp(datetime.datetime.strptime(dc['dcExpirationDate'], '%Y-%m-%d'))
+    dc['dcDate'] = convert_to_ts(dc['dcDate'])
+    dc['dcExpirationDate'] = convert_to_ts(dc['dcExpirationDate'])
     item_tuple = (dc['dcNumber'], dc['odometerValue'], dc['dcDate'], dc['dcExpirationDate'])
     print('Execute insertion')
     cursor.execute(q, item_tuple)
@@ -149,8 +152,8 @@ def insert_vin(vin: dict):
                     'source': 'api:new-dcs',
                     'vin': fv['vin'],
                     'actual_dc': vin['dcNumber'],
-                    'dc_date': datetime.datetime.timestamp(datetime.datetime.strptime(vin['dcDate'], '%Y-%m-%d')),
-                    'dc_expiration': datetime.datetime.timestamp(datetime.datetime.strptime(vin['dcExpirationDate'], '%Y-%m-%d')),
+                    'dc_date': convert_to_ts(vin['dcDate']),
+                    'dc_expiration': convert_to_ts(vin['dcExpirationDate']),
                     'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
                 }
                 return result
@@ -173,9 +176,8 @@ def insert_vin(vin: dict):
         cursor = conn.cursor()
         q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
         print('Converting dt...')
-        dc_act['dcDate'] = datetime.datetime.timestamp(datetime.datetime.strptime(dc_act['dcDate'], '%Y-%m-%d'))
-        dc_act['dcExpirationDate'] = datetime.datetime.timestamp(
-            datetime.datetime.strptime(dc_act['dcExpirationDate'], '%Y-%m-%d'))
+        dc_act['dcDate'] = convert_to_ts(dc_act['dcDate'])
+        dc_act['dcExpirationDate'] = convert_to_ts(dc_act['dcExpirationDate'])
         item_tuple = (vin['body'], dc_act['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']])
         print('Execute vin_cache upd...')
         cursor.execute(q, item_tuple)
@@ -188,8 +190,8 @@ def insert_vin(vin: dict):
             'source': 'api:new-all',
             'vin': vin['body'],
             'actual_dc': vin['dcNumber'],
-            'dc_date': datetime.datetime.timestamp(datetime.datetime.strptime(vin['dcDate'], '%Y-%m-%d')),
-            'dc_expiration': datetime.datetime.timestamp(datetime.datetime.strptime(vin['dcExpirationDate'], '%Y-%m-%d')),
+            'dc_date': convert_to_ts(vin['dcDate']),
+            'dc_expiration': convert_to_ts(vin['dcExpirationDate']),
             'dc_history': [dc['dcNumber'] for dc in vin['previousDcs']]
         }
         print('Result done')
