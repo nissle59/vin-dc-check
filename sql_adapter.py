@@ -108,8 +108,10 @@ def find_dc(dcNumber: str):
 def insert_vin(vin: dict):
     print(vin['body'])
     fv = find_vin(vin['body'])
+    print(fv)
     if fv:
         ad = find_dc(fv['actual_dc'])
+        print(ad)
         if ad:
             if ad['dcExpirationDate'] > datetime.datetime.timestamp(datetime.datetime.now()):
                 result = {
