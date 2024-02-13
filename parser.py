@@ -6,7 +6,7 @@ import sql_adapter
 
 class VinDcCheck:
     def __init__(self, captcha_api_key):
-        self.captch_req_url = ' https://check.gibdd.ru/captcha'
+        self.captch_req_url = 'https://check.gibdd.ru/captcha'
         self.dc_check_url = 'https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/diagnostic'
         self.session = requests.Session()
         self.api_key = captcha_api_key
