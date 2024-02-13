@@ -106,6 +106,7 @@ def find_dc(dcNumber: str):
 
 
 def insert_vin(vin: dict):
+    print(vin['body'])
     fv = find_vin(vin['body'])
     if fv:
         ad = find_dc(fv['actual_dc'])

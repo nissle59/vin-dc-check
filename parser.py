@@ -42,6 +42,7 @@ class VinDcCheck:
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             r = self.session.post(self.dc_check_url, data=params)
+            print(r.status_code)
             try:
                 res = r.json().get('RequestResult').get('diagnosticCards')
                 sql_adapter.insert_vins(res)
