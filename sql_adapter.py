@@ -210,7 +210,7 @@ def get_setting(setting_name: str):
     q = "SELECT value FROM settings WHERE setting_name = %s"
     item_tuple = (setting_name,)
     cursor.execute(q, item_tuple)
-    res = cursor.fetchone()[0]
+    res = cursor.fetchone()
     cursor.close()
     if len(res) > 0:
         conn.close()
