@@ -27,6 +27,7 @@ def find_vin(vin: str):
     item_tuple = (vin,)
     cursor.execute(q, item_tuple)
     res = cursor.fetchall()
+    cursor.close()
     if len(res) > 0:
         conn.close()
         return res[0]
@@ -63,6 +64,7 @@ def update_vin(vin: dict):
     item_tuple = (vin['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']],vin['body'])
     cursor.execute(q, item_tuple)
     conn.commit()
+    cursor.close()
     conn.close()
 
 
@@ -96,6 +98,7 @@ def _insert_dc_no_commit(conn, dc: dict):
     item_tuple = (dc['dcNumber'], dc['odometerValue'], dc['dcDate'], dc['dcExpirationDate'])
     print('Execute insertion')
     cursor.execute(q, item_tuple)
+    cursor.close()
 
 
 def find_dc(dcNumber: str):
