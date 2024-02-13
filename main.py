@@ -22,7 +22,11 @@ app.add_middleware(
 @app.get("/getdc")
 async def getdc(vin):
     VDCP = parser.VinDcCheck()
-    res = VDCP.process_vin(vin)
+    try:
+        res = json.dumps(vin, indent=4, sort_keys=True, default=str)
+    except:
+        res = None
+    #res = VDCP.process_vin(vin)
     err = {
         "status": "error"
     }

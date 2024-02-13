@@ -65,7 +65,7 @@ class VinDcCheck:
     def process_vin(self, vin_code):
         vin = sql_adapter.check_vin(vin_code)
         if vin:
-            return json.dumps(vin, indent=4, sort_keys=True, default=str)
+            return vin
         else:
             self.check_vin_code(vin_code)
 

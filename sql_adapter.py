@@ -202,6 +202,7 @@ def insert_vins(vins: list):
     results = []
     for vin in vins:
         results.append(insert_vin(vin))
+    return results
 
 
 def get_setting(setting_name: str):
