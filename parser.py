@@ -69,7 +69,7 @@ class VinDcCheck:
         if vin:
             return vin
         else:
-            return self.check_vin_code(vin_code)
+            return self.check_vin_code(vin_code)[0]
 
 if __name__ == '__main__':
     instance = VinDcCheck()
