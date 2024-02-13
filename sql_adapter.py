@@ -151,6 +151,8 @@ def insert_vin(vin: dict):
             "dcNumber": vin.get('dcNumber', ''),
             "dcDate": vin['dcDate']
         }
+        print('dc_act')
+        print(dc_act)
         insert_dcs(dcs)
         insert_dc(dc_act)
 
