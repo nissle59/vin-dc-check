@@ -1,6 +1,7 @@
 import requests
 import json
 from anticaptcha import Anticaptcha
+import sql_adapter
 
 
 class VinDcCheck:
@@ -41,9 +42,21 @@ class VinDcCheck:
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             r = self.session.post(self.dc_check_url, data=params)
-            return r.json()
+            try:
+                res = r.json().get('RequestResult').get('diagnosticCards')
+                sql_adapter.insert_vins(res)
+            except:
+                res = None
+                return res
+
+    def process_vin(self, vin_code):
+        vin = sql_adapter.check_vin(vin_code)
+        if vin:
+            return vin
+        else:
+            self.check_vin_code(vin_code)
 
 if __name__ == '__main__':
     instance = VinDcCheck('e9e783d3e52abd6101fc807ab1109400')
-    dc = instance.check_vin_code('X9H47434A90000156')
-    print(json.dumps(dc,ensure_ascii=False,indent=2))
+    dc = instance.process_vin('X9H47434A90000156')
+    print(dc)
