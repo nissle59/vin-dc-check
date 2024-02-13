@@ -44,6 +44,7 @@ def find_vin(vin: str):
 def check_vin(vin: str):
     v = find_vin(vin)
     if v:
+        print(v)
         dc = find_dc(v['actual_dc'])
         if dc['dc_expiration'] > datetime.datetime.timestamp(datetime.datetime.now()):
             result = {
