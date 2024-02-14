@@ -68,13 +68,13 @@ async def find_vin_act_dk(vin):
 async def create_vin_act_dk(vin_d):
     nowdt = del_tz(datetime.datetime.now())
     items_tuple = (vin_d["dcNumber"],vin_d["body"],convert_to_ts(vin_d["dcDate"]),convert_to_ts(vin_d["dcExpirationDate"]),'now()','now()')
-    query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING; COMMIT;"
+    query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query)
-    if data is not None:
-        return await find_vin_act_dk(vin_d["body"])
-    else:
-        return None
+        if data is not None:
+            return await find_vin_act_dk(vin_d["body"])
+        else:
+            return None
 
 
 
