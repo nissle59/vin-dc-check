@@ -39,7 +39,7 @@ def list_detector(input):
     else:
         data = dict(input)
     for key, value in data.items():
-        new_data[underscore_to_camel(key)] = data.pop(key)
+        new_data[underscore_to_camel(key)] = data.get(key)
     return new_data
 
 
