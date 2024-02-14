@@ -58,9 +58,7 @@ class VinDcCheck:
                     #return None
                 #print(json.dumps(res,ensure_ascii=False,indent=2))
                 res = res.get('RequestResult').get('diagnosticCards')
-                result = []
-                for r in res:
-                    result.append(sql_adapter.create_vin_act_dk(r))
+                res = self.vin_dcs_to_sql(res)
                 return res
             except Exception as e:
                 print(e)
@@ -73,6 +71,15 @@ class VinDcCheck:
             return vin
         else:
             return self.check_vin_code(vin_code)[0]
+
+    def vin_dcs_to_sql(self, input):
+        result = []
+        if isinstance(input, list):
+            for r in input:
+                result.append(sql_adapter.create_vin_act_dk(r))
+        else:
+            result.append(sql_adapter.create_vin_act_dk(input))
+        return result
 
 if __name__ == '__main__':
     instance = VinDcCheck()
