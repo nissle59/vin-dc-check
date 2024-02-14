@@ -58,7 +58,9 @@ class VinDcCheck:
                     #return None
                 #print(json.dumps(res,ensure_ascii=False,indent=2))
                 res = res.get('RequestResult').get('diagnosticCards')
-                res = sql_adapter.insert_vins(res)
+                result = []
+                for r in res:
+                    result.append(sql_adapter.create_vin_act_dk(r))
                 return res
             except Exception as e:
                 print(e)
