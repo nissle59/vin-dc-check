@@ -62,12 +62,24 @@ class AsyncDatabase:
 
         return res
 
-    async def execute(self, query: str) -> bool:
+    async def execute(self, query: str, values=tuple()) -> bool:
         if self.conn is None:
             raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
 
         try:
-            res = await self.conn.execute(query=query)
+            res = await self.conn.execute(query, values)
+        except Exception as e:
+            print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
+            return None
+
+        return res
+
+    async def executemany(self, query: str, values=tuple()):
+        if self.conn is None:
+            raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
+
+        try:
+            res = await self.conn.executemany(query, values)
         except Exception as e:
             print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
