@@ -87,11 +87,13 @@ async def find_vin_prev_dk(vin):
 
 async def create_vin_act_dk(vin_d):
     nowdt = del_tz(datetime.datetime.now())
+    dc_num = vin_d['dcNumber']
+    vin_code = vin_d['body']
+    issue_date = convert_to_ts(vin_d["dcDate"])
+    expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
     items_tuple = (
-        vin_d["dcNumber"], vin_d["body"], convert_to_ts(vin_d["dcDate"]), convert_to_ts(vin_d["dcExpirationDate"]),
-        'now()',
-        'now()')
-    query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
+        dc_num, vin_code, issue_date, expiry_date, 'now()', 'now()')
+    query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT (vin) DO UPDATE SET dc_number='{dc_num}', issue_date='{issue_date}', expiry_date='{expiry_date}', touched_at=now()"
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query)
         if data is not None:

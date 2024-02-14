@@ -22,7 +22,13 @@ app.add_middleware(
 
 @app.get("/findDc")
 async def getdc(vin):
-    res = await service.find_dc(vin)
+    res = json.dumps(
+        await service.find_dc(vin),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
     err = {"status": "error"}
     err = json.dumps(err, indent=4, sort_keys=True, default=str)
 
@@ -43,7 +49,13 @@ async def getdc(vin):
 
 @app.get("/dc")
 async def dc(vin):
-    res = await service.dc(vin)
+    res = json.dumps(
+        await service.dc(vin),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
     err = {"status": "error"}
     err = json.dumps(err, indent=4, sort_keys=True, default=str)
 
@@ -64,7 +76,13 @@ async def dc(vin):
 
 @app.get("/dk_previous")
 async def dk_previous(vin):
-    res = await service.dk_previous(vin)
+    res = json.dumps(
+        await service.dk_previous(vin),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
     err = {"status": "error"}
     err = json.dumps(err, indent=4, sort_keys=True, default=str)
 
