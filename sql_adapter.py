@@ -124,14 +124,16 @@ async def create_vin_act_dk(vin_d):
         else:
             return None
 
-#    q = "SELECT * FROM vin_cache WHERE vin = %s"
-#
-#    q = "UPDATE vin_cache SET actual_dc = %s, dc_history = %s WHERE vin = %s"
-#
-#    q = "INSERT INTO dcs VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
-#
-#    q = "SELECT * FROM dcs WHERE dc_number = %s"
-#
-#    q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
-#
-#    q = "SELECT value FROM settings WHERE setting_name = %s"
+
+async def update_proxies(plist):
+    async with AsyncDatabase(**conf) as db:
+        for item in plist:
+            proxy_id = plist['proxyId']
+            ip = plist['ip']
+            username = plist['username']
+            password = plist['password']
+            pr_type = plist['type']
+            enabled = plist['enabled']
+            items_tuple = (proxy_id, ip, username, password, pr_type, enabled)
+            query = f"INSERT INTO proxies VALUES {items_tuple} ON CONFLICT (proxy_id) DO UPDATE SET ip='{ip}', username='{username}', 'password'='{password}', 'type'={pr_type}, enabled={enabled}"
+            data = await db.execute(query)
