@@ -11,7 +11,7 @@ def del_tz(dt: datetime.datetime):
 def convert_to_ts(s:str):
     # dt = datetime.datetime.strptime(s,'%Y-%m-%d')
     # dt = del_tz(dt)
-    dt = f'DATE \'{s}\''
+    dt = s
     return dt
 
 
