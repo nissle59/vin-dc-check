@@ -48,7 +48,7 @@ class VinDcCheck:
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             r = self.session.post(self.dc_check_url, data=params)
             try:
-                print(r.text)
+                # print(r.text)
                 res = r.json()
                 try:
                     if res.get('code', 200) in ['201', 201]:
