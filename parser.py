@@ -11,7 +11,8 @@ class VinDcCheck:
         self.captch_req_url = 'https://check.gibdd.ru/captcha'
         self.dc_check_url = 'https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/diagnostic'
         self.session = requests.Session()
-        self.api_key = sql_adapter.get_setting('captcha_api_key')
+        #self.api_key = sql_adapter.get_setting('captcha_api_key')
+        self.api_key = 'e9e783d3e52abd6101fc807ab1109400'
         self.solver = Anticaptcha(token = self.api_key)
 
     def get_captcha(self):
