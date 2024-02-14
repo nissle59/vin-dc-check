@@ -1,221 +1,83 @@
-import psycopg2
 import datetime
+from database import AsyncDatabase
+import config
+import re
 
-DATABASE = {
-    'host': 'db.local',
-    'port': 5432,
-    'user': 'postgres',
-    'password': 'psqlpass',
-    'database': 'vindcgibdd'
-}
 
-def connect_to_db():
-    conn = psycopg2.connect(
-        user=DATABASE['user'],
-        password=DATABASE['password'],
-        host=DATABASE['host'],
-        port=DATABASE['port'],
-        database=DATABASE['database']
-    )
-    return conn
-
+def del_tz(dt: datetime.datetime):
+    dt = dt.replace(tzinfo=None)
+    return dt
 
 def convert_to_ts(s:str):
     dt = datetime.datetime.strptime(s,'%Y-%m-%d')
-    return psycopg2.Date(dt.year, dt.month, dt.day)
-    #return datetime.datetime.timestamp(datetime.datetime.strptime(s,'%Y-%m-%d'))*1000
+    dt = del_tz(dt)
+    return dt
 
-def find_vin(vin: str):
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    q = "SELECT * FROM vin_cache WHERE vin = %s"
-    item_tuple = (vin,)
-    cursor.execute(q, item_tuple)
-    res = cursor.fetchall()
-    cursor.close()
-    if len(res) > 0:
-        conn.close()
-        return res[0]
+
+camel_pat = re.compile(r'([A-Z])')
+under_pat = re.compile(r'_([a-z])')
+def camel_to_underscore(name):
+    return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
+
+
+def underscore_to_camel(name):
+    return under_pat.sub(lambda x: x.group(1).upper(), name)
+
+
+conf = config.DATABASE
+
+def list_detector(input):
+    if isinstance(input, list):
+        data = [dict(record) for record in input][0]
+        for record in data:
+            record = dict(record)
+            for key, value in record.items():
+                record[underscore_to_camel(key)]=record.pop(key)
     else:
-        conn.close()
-        return None
+        data = dict(input)
+        for key, value in data.items():
+            data[underscore_to_camel(key)] = data.pop(key)
+    return data
 
 
-def check_vin(vin: str):
-    v = find_vin(vin)
-    if v:
-        #print(v)
-        dc = find_dc(v[1])
-        if dc[3] > datetime.datetime.now():
-            result = {
-                'source': 'cache',
-                'vin': v[0],
-                'actualDc': dc[0],
-                'dcDate': dc[2],
-                'dcExpiration': dc[3],
-                'dcHistory': v[2]
-            }
-            return result
-        else:
-            return None
-    else:
-        return None
+async def find_vin_act_dk(vin):
+    query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
+
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return {}
+
+    data = list_detector(data)
+
+    return data
+
+
+async def create_vin_act_dk(vin_d):
+    nowdt = del_tz(datetime.datetime.now())
+    items_tuple = (vin_d["dcNumber"],vin_d["body"],convert_to_ts(vin_d["dcDate"]),convert_to_ts(vin_d["dcExpirationDate"]),nowdt,nowdt)
+    query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
+    async with AsyncDatabase(**conf) as db:
+        data = await db.execute(query)
+
+    return data
 
 
 
-def update_vin(vin: dict):
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    q = "UPDATE vin_cache SET actual_dc = %s, dc_history = %s WHERE vin = %s"
-    item_tuple = (vin['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']],vin['body'])
-    cursor.execute(q, item_tuple)
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 
-def insert_dc(dc: dict):
-    conn = connect_to_db()
-    _insert_dc_no_commit(conn, dc)
-    conn.commit()
-    conn.close()
 
 
-def insert_dcs(dcs: list):
-    #print('Try to connect to DB')
-    conn = connect_to_db()
-    #print('Connected to DB')
-    for dc in dcs:
-        #print('Try to insert')
-        _insert_dc_no_commit(conn, dc)
-    #print('Commiting..')
-    conn.commit()
-    #print('Committed.. Close connection')
-    conn.close()
 
-
-def _insert_dc_no_commit(conn, dc: dict):
-    print('Creating cursor')
-    cursor = conn.cursor()
-    q = "INSERT INTO dcs VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
-    item_tuple = (dc['dcNumber'], dc['odometerValue'],convert_to_ts(dc['dcDate']),convert_to_ts(dc['dcExpirationDate']))
-    print('Execute insertion')
-    cursor.execute(q, item_tuple)
-    cursor.close()
-
-
-def find_dc(dcNumber: str):
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    q = "SELECT * FROM dcs WHERE dc_number = %s"
-    item_tuple = (dcNumber,)
-    cursor.execute(q, item_tuple)
-    res = cursor.fetchall()
-    if len(res) > 0:
-        conn.close()
-        return res[0]
-    else:
-        conn.close()
-        return None
-
-
-def insert_vin(vin: dict):
-    #print(vin['body'])
-    fv = find_vin(vin['body'])
-    #print(fv)
-    if fv:
-        ad = find_dc(fv[1])
-        print(ad)
-        if ad:
-            if ad[3] > datetime.datetime.now():
-                result = {
-                    'source':'cache',
-                    'vin':fv[0],
-                    'actualDc':ad[0],
-                    'dcDate':ad[2],
-                    'dcExpiration':ad[3],
-                    'dcHistory':fv[2]
-                }
-                return result
-            else:
-                dcs = vin['previousDcs']
-                dc_act = {
-                    "odometerValue": vin.get('odometerValue',''),
-                    "dcExpirationDate": vin['dcExpirationDate'],
-                    "dcNumber": vin.get('dcNumber',''),
-                    "dcDate": vin['dcDate']
-                }
-                insert_dcs(dcs)
-                insert_dc(dc_act)
-                update_vin(vin)
-                result = {
-                    'source': 'api:new-dcs',
-                    'vin': fv[0],
-                    'actualDc': vin['dcNumber'],
-                    'dcDate': vin['dcDate'],
-                    'dcExpiration': vin['dcExpirationDate'],
-                    'dcHistory': [dc['dcNumber'] for dc in vin['previousDcs']]
-                }
-                return result
-    else:
-        dcs = vin['previousDcs']
-        dc_act = {
-            "odometerValue": vin.get('odometerValue', ''),
-            "dcExpirationDate": vin['dcExpirationDate'],
-            "dcNumber": vin.get('dcNumber', ''),
-            "dcDate": vin['dcDate']
-        }
-        #print('dc_act')
-        #print(dc_act)
-        insert_dcs(dcs)
-        insert_dc(dc_act)
-
-        #print('Try to connect to DB')
-        conn = connect_to_db()
-        #print('Connected to DB')
-        cursor = conn.cursor()
-        q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
-        # print('Converting dt...')
-        # dc_act['dcDate'] = convert_to_ts(dc_act['dcDate'])
-        # dc_act['dcExpirationDate'] = convert_to_ts(dc_act['dcExpirationDate'])
-        item_tuple = (vin['body'], dc_act['dcNumber'],[dc['dcNumber'] for dc in vin['previousDcs']])
-        #print('Execute vin_cache upd...')
-        cursor.execute(q, item_tuple)
-        #print('Commiting...')
-        conn.commit()
-        #print('Done')
-        cursor.close()
-
-        result = {
-            'source': 'api:new-all',
-            'vin': vin['body'],
-            'actualDc': vin['dcNumber'],
-            'dcDate': vin['dcDate'],
-            'dcExpiration': vin['dcExpirationDate'],
-            'dcHistory': [dc['dcNumber'] for dc in vin['previousDcs']]
-        }
-        print('Result done')
-        return result
-
-
-def insert_vins(vins: list):
-    results = []
-    for vin in vins:
-        results.append(insert_vin(vin))
-    return results
-
-
-def get_setting(setting_name: str):
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    q = "SELECT value FROM settings WHERE setting_name = %s"
-    item_tuple = (setting_name,)
-    cursor.execute(q, item_tuple)
-    res = cursor.fetchone()
-    cursor.close()
-    if len(res) > 0:
-        conn.close()
-        return res[0]
-    else:
-        conn.close()
-        return None
+#    q = "SELECT * FROM vin_cache WHERE vin = %s"
+#
+#    q = "UPDATE vin_cache SET actual_dc = %s, dc_history = %s WHERE vin = %s"
+#
+#    q = "INSERT INTO dcs VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
+#
+#    q = "SELECT * FROM dcs WHERE dc_number = %s"
+#
+#    q = "INSERT INTO vin_cache (vin, actual_dc, dc_history) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING"
+#
+#    q = "SELECT value FROM settings WHERE setting_name = %s"

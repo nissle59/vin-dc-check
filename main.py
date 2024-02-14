@@ -19,11 +19,11 @@ app.add_middleware(
 #     Instrumentator().instrument(app).expose(app)
 
 
-@app.get("/getdc")
+@app.get("/findDc")
 async def getdc(vin):
     VDCP = parser.VinDcCheck()
     try:
-        res = json.dumps(VDCP.process_vin(vin), indent=4, sort_keys=True, default=str)
+        res = json.dumps(VDCP.check_vin_code(vin), indent=4, sort_keys=True, default=str)
     except:
         res = None
     #res = VDCP.process_vin(vin)
