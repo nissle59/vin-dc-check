@@ -10,8 +10,7 @@ async def find_dc(vin_code):
         if len(vin) == 1:
             vin = vin[0]
             resp = await sql_adapter.create_vin_act_dk(vin)
-            if resp:
-                result.append(await sql_adapter.find_vin_act_dk(vin_code))
+            result.append(await sql_adapter.find_vin_act_dk(vin_code))
             return result[0]
         elif len(vin) > 1:
             for item in vin:
