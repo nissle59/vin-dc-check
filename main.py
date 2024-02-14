@@ -30,6 +30,7 @@ async def getdc(vin):
     err = {
         "status": "error"
     }
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
 
     if res:
         return responses.Response(
