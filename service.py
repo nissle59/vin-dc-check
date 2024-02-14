@@ -32,3 +32,8 @@ async def dc(vin_code):
 
 async def dk_previous(vin_code):
     return await sql_adapter.find_vin_prev_dk(vin_code)
+
+
+async def update_proxies():
+    proxies = parser.get_proxies_from_url()
+    return await sql_adapter.update_proxies(proxies)

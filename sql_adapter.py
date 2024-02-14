@@ -126,6 +126,7 @@ async def create_vin_act_dk(vin_d):
 
 
 async def update_proxies(plist):
+    count = 0
     async with AsyncDatabase(**conf) as db:
         for item in plist:
             proxy_id = plist['proxyId']
@@ -137,3 +138,8 @@ async def update_proxies(plist):
             items_tuple = (proxy_id, ip, username, password, pr_type, enabled)
             query = f"INSERT INTO proxies VALUES {items_tuple} ON CONFLICT (proxy_id) DO UPDATE SET ip='{ip}', username='{username}', 'password'='{password}', 'type'={pr_type}, enabled={enabled}"
             data = await db.execute(query)
+            count += 1
+    return {
+        "count": count,
+        "status": "updated"
+    }
