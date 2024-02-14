@@ -29,15 +29,25 @@ conf = config.DATABASE
 def list_detector(input):
     if isinstance(input, list):
         data = [dict(record) for record in input][0]
-        for record in data:
-            record = dict(record)
-            for key, value in record.items():
-                record[underscore_to_camel(key)]=record.pop(key)
     else:
         data = dict(input)
-        for key, value in data.items():
-            data[underscore_to_camel(key)] = data.pop(key)
+    for key, value in data.items():
+        data[underscore_to_camel(key)] = data.pop(key)
     return data
+
+
+async def get_setting(setting_name:str):
+    query = f"SELECT value FROM settings WHERE setting_name = '{setting_name}'"
+
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return {}
+
+    data = list_detector(data)
+
+    return data[setting_name]
 
 
 async def find_vin_act_dk(vin):
