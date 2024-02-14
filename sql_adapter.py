@@ -43,6 +43,24 @@ def list_detector(input):
     return new_data
 
 
+def list_detector_to_list(input):
+    if isinstance(input, list):
+        new_data = []
+        # data = [dict(record) for record in input]
+        for record in input:
+            new_d = {}
+            record = dict(record)
+            for key, value in record.items():
+                new_d[underscore_to_camel(key)] = record.get(key)
+            new_data.append(new_d)
+    else:
+        new_data = {}
+        data = dict(input)
+        for key, value in data.items():
+            new_data[underscore_to_camel(key)] = data.get(key)
+    return new_data
+
+
 async def get_setting(setting_name: str):
     query = f"SELECT value FROM settings WHERE setting_name = '{setting_name}'"
 
@@ -80,7 +98,7 @@ async def find_vin_prev_dk(vin):
     if data is None:
         return {}
 
-    data = list_detector(data)
+    data = list_detector_to_list(data)
 
     return data
 
