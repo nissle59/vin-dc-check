@@ -11,7 +11,7 @@ def del_tz(dt: datetime.datetime):
 def convert_to_ts(s:str):
     # dt = datetime.datetime.strptime(s,'%Y-%m-%d')
     # dt = del_tz(dt)
-    dt = f"DATE '{s}'"
+    dt = f'DATE \'{s}\''
     return dt
 
 
@@ -67,7 +67,7 @@ async def find_vin_act_dk(vin):
 
 async def create_vin_act_dk(vin_d):
     nowdt = del_tz(datetime.datetime.now())
-    items_tuple = (vin_d["dcNumber"],vin_d["body"],convert_to_ts(vin_d["dcDate"]),convert_to_ts(vin_d["dcExpirationDate"]),nowdt,nowdt)
+    items_tuple = (vin_d["dcNumber"],vin_d["body"],convert_to_ts(vin_d["dcDate"]),convert_to_ts(vin_d["dcExpirationDate"]),'now()','now()')
     query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query)
