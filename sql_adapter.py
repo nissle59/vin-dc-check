@@ -71,8 +71,11 @@ async def create_vin_act_dk(vin_d):
     query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query)
-
-    return data
+        print(data)
+    if data:
+        return vin_d
+    else:
+        return None
 
 
 
