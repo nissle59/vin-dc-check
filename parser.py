@@ -58,12 +58,12 @@ class VinDcCheck:
                     #return None
                 #print(json.dumps(res,ensure_ascii=False,indent=2))
                 res = res.get('RequestResult').get('diagnosticCards')
-                res = await self.vin_dcs_to_sql(res)
-                return res
+                result = await self.vin_dcs_to_sql(res)
+                return result
             except Exception as e:
                 print(e)
-                res = None
-                return res
+                result = None
+                return result
 
     def process_vin(self, vin_code):
         vin = sql_adapter.check_vin(vin_code)

@@ -73,7 +73,7 @@ async def create_vin_act_dk(vin_d):
         data = await db.execute(query)
         print(data)
     if data is not None:
-        return data
+        return await find_vin_act_dk(vin_d["body"])
     else:
         return None
 
