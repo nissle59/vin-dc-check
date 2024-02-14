@@ -143,5 +143,5 @@ async def update_proxies(plist):
         data = await db.executemany(query)
     return {
         "count": count,
-        "status": "updated"
+        "result": data
     }
