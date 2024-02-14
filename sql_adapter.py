@@ -136,7 +136,7 @@ async def update_proxies(plist):
             pr_type = item['type']
             enabled = item['enabled']
             items_tuple = (proxy_id, ip, username, password, pr_type, enabled)
-            query = f"INSERT INTO proxies VALUES {items_tuple} ON CONFLICT (proxy_id) DO UPDATE SET ip='{ip}', username='{username}', 'password'='{password}', 'type'={pr_type}, enabled={enabled}"
+            query = f'INSERT INTO proxies VALUES {items_tuple} ON CONFLICT (proxy_id) DO UPDATE SET ip=\'{ip}\', username=\'{username}\', "password"=\'{password}\', "type"=\'{pr_type}\', enabled={enabled}'
             data = await db.execute(query)
             count += 1
     return {
