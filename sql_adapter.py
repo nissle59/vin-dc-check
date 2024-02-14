@@ -141,6 +141,7 @@ async def update_proxies(plist):
     async with AsyncDatabase(**conf) as db:
         query = f'INSERT INTO proxies VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (proxy_id) DO UPDATE SET ip=$2, username=$3, "password"=4, "type"=$5, enabled=$6'
         data = await db.executemany(query)
+        print(data)
     return {
         "count": count,
         "result": data

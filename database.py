@@ -74,7 +74,7 @@ class AsyncDatabase:
 
         return res
 
-    async def executemany(self, query: str, values=tuple()):
+    async def executemany(self, query: str, values=[]):
         if self.conn is None:
             raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
 
