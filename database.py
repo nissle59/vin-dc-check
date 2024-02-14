@@ -70,6 +70,6 @@ class AsyncDatabase:
             res = await self.conn.execute(query=query)
         except Exception as e:
             print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
-            return False
+            return None
 
         return res == 'COMMIT'

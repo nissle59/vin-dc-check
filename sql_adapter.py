@@ -72,7 +72,7 @@ async def create_vin_act_dk(vin_d):
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query)
         print(data)
-    if data:
+    if data is not None:
         return vin_d
     else:
         return None
