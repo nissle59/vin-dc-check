@@ -33,13 +33,14 @@ conf = config.DATABASE
 
 
 def list_detector(input):
+    new_data = {}
     if isinstance(input, list):
         data = [dict(record) for record in input][0]
     else:
         data = dict(input)
     for key, value in data.items():
-        data[underscore_to_camel(key)] = data.pop(key)
-    return data
+        new_data[underscore_to_camel(key)] = data.pop(key)
+    return new_data
 
 
 async def get_setting(setting_name: str):
