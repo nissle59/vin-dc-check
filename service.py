@@ -31,4 +31,4 @@ async def dc(vin_code):
 
 
 async def dk_previous(vin_code):
-    pass
+    return await sql_adapter.find_vin_prev_dk(vin_code)
