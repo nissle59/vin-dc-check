@@ -97,7 +97,7 @@ async def create_vin_act_dk(vin_d):
             for prev_dk in vin_d["previousDcs"]:
                 items_tuple = (prev_dk["dcNumber"], vin_d["body"], convert_to_ts(prev_dk["dcDate"]),
                                convert_to_ts(prev_dk["dcExpirationDate"]))
-                query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT DO NOTHING"
+                query = f"INSERT INTO dk_previous VALUES {items_tuple} ON CONFLICT DO NOTHING"
                 prev_data = await db.execute(query)
             return True
         else:
