@@ -1,3 +1,4 @@
+import config
 import parser
 import sql_adapter
 
@@ -35,4 +36,6 @@ async def dk_previous(vin_code):
 
 async def update_proxies():
     proxies = parser.get_proxies_from_url()
+    config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}'} for proxy in
+                      sql_adapter.get_active_proxies('HTTPS')]
     return await sql_adapter.update_proxies(proxies)

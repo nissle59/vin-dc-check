@@ -1,9 +1,11 @@
 import time
+import warnings
 
 import requests
 
 from anticaptcha import Anticaptcha
 
+warnings.filterwarnings("ignore")
 
 def get_proxies_from_url(url=f"http://api-external.tm.8525.ru/proxies?token=5jossnicxhn75lht7aimal7r2ocvg6o7"):
     r = requests.get(url, verify=False)
@@ -23,8 +25,11 @@ class VinDcCheck:
         self.api_key = 'e9e783d3e52abd6101fc807ab1109400'
         self.solver = Anticaptcha(token=self.api_key)
 
-    def get_captcha(self):
-        r = self.session.get(self.captch_req_url, verify=False)
+    def get_captcha(self, proxy=None):
+        if proxy:
+            r = self.session.get(self.captch_req_url, verify=False, proxies=proxy)
+        else:
+            r = self.session.get(self.captch_req_url, verify=False)
         if r:
             result = r.json()
             # print(result.get('token'))
@@ -40,8 +45,8 @@ class VinDcCheck:
         # self.solver.normal()
         return self.solver.resolve_captcha(captcha_img_b64)
 
-    def get_vin_code(self, vin_code):
-        captcha = self.get_captcha()
+    def get_vin_code(self, vin_code, proxy=None):
+        captcha = self.get_captcha(proxy)
         if captcha:
             c_token = captcha.get('token')
             try:
@@ -55,7 +60,10 @@ class VinDcCheck:
                 'captchaToken': c_token
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-            r = self.session.post(self.dc_check_url, data=params)
+            if proxy:
+                r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+            else:
+                r = self.session.post(self.dc_check_url, data=params, verify=False)
             try:
                 # print(r.text)
                 res = r.json()
@@ -63,7 +71,7 @@ class VinDcCheck:
                     if res.get('code', 200) in ['201', 201]:
                         time.sleep(1)
                         print('Captcha error, retrying...')
-                        self.get_vin_code(vin_code)
+                        self.get_vin_code(vin_code, proxy)
                 except:
                     pass
                 res = res.get('RequestResult').get('diagnosticCards')
@@ -73,8 +81,8 @@ class VinDcCheck:
                 res = None
                 return res
 
+    def multithreading_get_vins(self, vins, use_proxy=True):
+        pass
 
 if __name__ == '__main__':
-    instance = VinDcCheck()
-    dc = instance.process_vin('X9H47434A90000156')
-    print(dc)
+    pass

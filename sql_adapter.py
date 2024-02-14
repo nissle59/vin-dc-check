@@ -75,6 +75,26 @@ async def get_setting(setting_name: str):
     return data[setting_name]
 
 
+async def get_active_proxies(proxy_type: str):
+    if proxy_type == "HTTPS":
+        t_name = 'https_active_proxies'
+    elif proxy_type == 'SOCKS5':
+        t_name = 'socks_active_proxies'
+    else:
+        t_name = 'active_proxies'
+
+    query = f"SELECT * FROM {t_name}"
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return []
+
+    data = list_detector_to_list(data)
+
+    return data
+
+
 async def find_vin_act_dk(vin):
     query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 

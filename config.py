@@ -5,3 +5,6 @@ DATABASE = {
     'pswd': 'psqlpass',
     'database': 'vindcgibdd'
 }
+
+proxies = []
+threads = 100
