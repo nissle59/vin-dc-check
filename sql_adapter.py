@@ -129,12 +129,12 @@ async def update_proxies(plist):
     count = 0
     async with AsyncDatabase(**conf) as db:
         for item in plist:
-            proxy_id = plist['proxyId']
-            ip = plist['ip']
-            username = plist['username']
-            password = plist['password']
-            pr_type = plist['type']
-            enabled = plist['enabled']
+            proxy_id = item['proxyId']
+            ip = item['ip']
+            username = item['username']
+            password = item['password']
+            pr_type = item['type']
+            enabled = item['enabled']
             items_tuple = (proxy_id, ip, username, password, pr_type, enabled)
             query = f"INSERT INTO proxies VALUES {items_tuple} ON CONFLICT (proxy_id) DO UPDATE SET ip='{ip}', username='{username}', 'password'='{password}', 'type'={pr_type}, enabled={enabled}"
             data = await db.execute(query)
