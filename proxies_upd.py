@@ -15,9 +15,9 @@ def get_proxies_from_url(url=f"http://api-external.tm.8525.ru/proxies?token=5jos
     return plist
 
 
-def update_proxies():
+async def update_proxies():
     proxies = get_proxies_from_url()
-    sql_adapter.update_proxies(proxies)
+    await sql_adapter.update_proxies(proxies)
 
 
 if __name__ == "__main__":
