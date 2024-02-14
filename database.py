@@ -72,4 +72,4 @@ class AsyncDatabase:
             print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
 
-        return res == 'COMMIT'
+        return res

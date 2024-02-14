@@ -73,7 +73,14 @@ async def create_vin_act_dk(vin_d):
         data = await db.execute(query)
         print(data)
     if data is not None:
-        return vin_d
+        return {
+            "dcNumber"
+            "vin"
+            "issueDate"
+            "expiryDate"
+            "touchedAt"
+            "createdAt"
+        }
     else:
         return None
 
