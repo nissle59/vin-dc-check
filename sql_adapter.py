@@ -153,11 +153,12 @@ async def load_vins(fname: Path):
     items_arr = []
     for vin in vins:
         vin = vin.strip()
-        items_tuple = (vin,)
-        items_arr.append(items_tuple)
-    query = f"INSERT INTO dcs(vin) VALUES {items_arr} ON CONFLICT (vin) DO NOTHING"
+        if vin != '':
+            items_tuple = (vin,)
+            items_arr.append(items_tuple)
+    query = f"INSERT INTO dcs(vin) VALUES ($1) ON CONFLICT (vin) DO NOTHING"
     async with AsyncDatabase(**conf) as db:
-        data = await db.execute(query)
+        data = await db.executemany(query, items_arr)
         if data is not None:
             return True
         else:
