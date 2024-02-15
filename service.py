@@ -22,7 +22,7 @@ async def find_dc(vin_code, noproxy):
                 config.r_proxies = cycle(config.proxies)
                 prx = next(config.r_proxies)
             except Exception as e:
-                print(e)
+                config.logger.info(e)
                 prx = next(config.r_proxies)
 
     result = []
@@ -41,7 +41,7 @@ async def find_dc(vin_code, noproxy):
         else:
             return None
     else:
-        print(f'Cant parse vin_code {vin_code}')
+        config.logger.info(f'Cant parse vin_code {vin_code}')
         return None
 
 
@@ -69,7 +69,7 @@ async def load_vins():
 
 async def scan_vins(noproxy):
     vins = await sql_adapter.scan_vins_to_update()
-    print(len(vins))
+
     for vin in vins:
         await find_dc(vin, noproxy)
-        print(f'{vins.index(vin)} of {len(vins)} VINs processed...')
+        config.logger.info(f'{vins.index(vin)} of {len(vins)} VINs processed...')

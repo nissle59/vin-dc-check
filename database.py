@@ -3,6 +3,8 @@ from typing import Optional
 
 import asyncpg
 
+import config
+
 
 class ConnectionDBError(Exception):
     ...
@@ -57,7 +59,7 @@ class AsyncDatabase:
         try:
             res = await self.conn.fetch(query=query)
         except Exception as e:
-            print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
+            config.logger.info(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
 
         return res
@@ -69,7 +71,7 @@ class AsyncDatabase:
         try:
             res = await self.conn.execute(query, values)
         except Exception as e:
-            print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
+            config.logger.info(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
 
         return res
@@ -81,7 +83,7 @@ class AsyncDatabase:
         try:
             res = await self.conn.executemany(query, values)
         except Exception as e:
-            print(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
+            config.logger.info(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
 
         return res

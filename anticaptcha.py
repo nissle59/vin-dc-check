@@ -21,23 +21,23 @@ class Anticaptcha():
             'body': b64image,
             'key': self.token
         }
-        # print(data)
-        # print(self.token)
+        # config.logger.info(data)
+        # config.logger.info(self.token)
         r = requests.post(self.uin, data=data)
         if r:
-            #print(r.text)
+            # config.logger.info(r.text)
             buf = r.text.split('|')
             status = buf[0]
             self.id = buf[1]
-            #print(r.text)
-            #print(self.id)
+            # config.logger.info(r.text)
+            #config.logger.info(self.id)
             return self.id
         else:
             self.id = None
             return None
 
     def _resolve_request(self):
-        #print(self.id)
+        #config.logger.info(self.id)
         if self.id:
             data = {
                 'action': 'get',
@@ -45,12 +45,12 @@ class Anticaptcha():
                 'key': self.token
             }
             r = requests.post(self.ures, data=data)
-            #print(r.status_code)
+            #config.logger.info(r.status_code)
             if r:
                 buf = r.text.split('|')
                 status = buf[0]
                 result = buf[1]
-                #print(r.text)
+                #config.logger.info(r.text)
                 if status == 'OK':
                     return result
                 else:
@@ -62,7 +62,7 @@ class Anticaptcha():
 
     def resolve_captcha(self, captchaImage:str):
         r = self._init_request(captchaImage)
-        #print(r)
+        #config.logger.info(r)
         if r:
             r = self._resolve_request()
             if r:

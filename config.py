@@ -1,3 +1,5 @@
+import logging
+import sys
 from itertools import cycle
 
 DATABASE = {
@@ -12,3 +14,14 @@ tries = 5
 proxies = []
 r_proxies = cycle(proxies)
 threads = 100
+
+logging.basicConfig(level=logging.INFO)
+
+handler = logging.FileHandler('app.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+s_handler = logging.StreamHandler(sys.stdout)
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.addHandler(s_handler)
+logger.setLevel(logging.INFO)
