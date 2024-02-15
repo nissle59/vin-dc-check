@@ -8,6 +8,7 @@ DATABASE = {
     'database': 'vindcgibdd'
 }
 
+tries = 5
 proxies = []
 r_proxies = cycle(proxies)
 threads = 100

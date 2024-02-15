@@ -3,6 +3,7 @@ import warnings
 
 import requests
 
+import config
 from anticaptcha import Anticaptcha
 
 warnings.filterwarnings("ignore")
@@ -46,7 +47,16 @@ class VinDcCheck:
         return self.solver.resolve_captcha(captcha_img_b64)
 
     def get_vin_code(self, vin_code, proxy=None):
-        captcha = self.get_captcha(proxy)
+        c = 1
+        while c <= config.tries:
+            try:
+                captcha = self.get_captcha(proxy)
+                c += 1
+                break
+            except Exception as e:
+                print(e)
+                proxy = next(config.r_proxies)
+                c += 1
         if captcha:
             c_token = captcha.get('token')
             try:
@@ -60,26 +70,31 @@ class VinDcCheck:
                 'captchaToken': c_token
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-            if proxy:
-                r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
-            else:
-                r = self.session.post(self.dc_check_url, data=params, verify=False)
-            try:
-                # print(r.text)
-                res = r.json()
+            c = 0
+            while c <= config.tries:
+                if proxy:
+                    r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+                else:
+                    r = self.session.post(self.dc_check_url, data=params, verify=False)
                 try:
-                    if res.get('code', 200) in ['201', 201]:
-                        time.sleep(1)
-                        print('Captcha error, retrying...')
-                        self.get_vin_code(vin_code, proxy)
+                    # print(r.text)
+                    res = r.json()
+                    try:
+                        if res.get('code', 200) in ['201', 201]:
+                            time.sleep(1)
+                            print('Captcha error, retrying...')
+                            self.get_vin_code(vin_code, proxy)
+                    except Exception as e:
+                        print(e)
+                    res = res.get('RequestResult').get('diagnosticCards')
+                    return res
                 except Exception as e:
                     print(e)
-                res = res.get('RequestResult').get('diagnosticCards')
-                return res
-            except Exception as e:
-                print(e)
-                res = None
-                return res
+                    res = None
+            return {'status': 'error', 'msg': f'Can\'t get vin with {c} tries, captcha OK'}
+
+        elif c > config.tries:
+            return {'status': 'error', 'msg': 'Can\'t process captcha code'}
 
     def multithreading_get_vins(self, vins, use_proxy=True):
         pass
