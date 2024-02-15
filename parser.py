@@ -3,7 +3,6 @@ import warnings
 
 import requests
 
-import config
 from anticaptcha import Anticaptcha
 
 warnings.filterwarnings("ignore")
@@ -47,17 +46,7 @@ class VinDcCheck:
         return self.solver.resolve_captcha(captcha_img_b64)
 
     def get_vin_code(self, vin_code, proxy=None):
-        c = 1
-        captcha = None
-        while c <= config.tries:
-            try:
-                captcha = self.get_captcha(proxy)
-                c += 1
-                break
-            except Exception as e:
-                print(e)
-                proxy = next(config.r_proxies)
-                c += 1
+        captcha = self.get_captcha(proxy)
         if captcha:
             c_token = captcha.get('token')
             try:
@@ -71,19 +60,10 @@ class VinDcCheck:
                 'captchaToken': c_token
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-            c = 0
-            while c <= config.tries:
-                try:
-                    if proxy:
-                        r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
-                    else:
-                        r = self.session.post(self.dc_check_url, data=params, verify=False)
-                    c += 1
-                except Exception as e:
-                    print(e)
-                    proxy = next(config.r_proxies)
-                    c += 1
-
+            if proxy:
+                r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+            else:
+                r = self.session.post(self.dc_check_url, data=params, verify=False)
             try:
                 # print(r.text)
                 res = r.json()
@@ -99,10 +79,7 @@ class VinDcCheck:
             except Exception as e:
                 print(e)
                 res = None
-            return {'status': 'error', 'msg': f'Can\'t get vin with {c} tries, captcha OK'}
-
-        elif c > config.tries:
-            return {'status': 'error', 'msg': 'Can\'t process captcha code'}
+                return res
 
     def multithreading_get_vins(self, vins, use_proxy=True):
         pass

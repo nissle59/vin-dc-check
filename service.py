@@ -7,16 +7,23 @@ import sql_adapter
 
 async def find_dc(vin_code, noproxy):
     v = parser.VinDcCheck()
+    c = 0
+    vin = None
     if noproxy:
         vin = v.get_vin_code(vin_code)
     else:
-        try:
-            prx = next(config.r_proxies)
-        except StopIteration:
-            config.r_proxies = cycle(config.proxies)
-            prx = next(config.r_proxies)
+        while c <= config.tries:
+            try:
+                prx = next(config.r_proxies)
+                vin = v.get_vin_code(vin_code, prx)
+                break
+            except StopIteration:
+                config.r_proxies = cycle(config.proxies)
+                prx = next(config.r_proxies)
+            except Exception as e:
+                print(e)
+                prx = next(config.r_proxies)
 
-        vin = v.get_vin_code(vin_code, prx)
     result = []
     if vin:
         if len(vin) == 1:
