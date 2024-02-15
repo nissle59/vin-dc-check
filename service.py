@@ -1,4 +1,5 @@
 from itertools import cycle
+from pathlib import Path
 
 import config
 import parser
@@ -62,5 +63,5 @@ async def update_proxies():
 
 
 async def load_vins():
-    fname = '/opt/VIN.txt'
+    fname = Path('/opt/VIN.txt')
     return await sql_adapter.load_vins(fname)

@@ -1,6 +1,7 @@
 import datetime
 import re
 from itertools import cycle
+from pathlib import Path
 
 import config
 from database import AsyncDatabase
@@ -146,7 +147,7 @@ async def create_vin_act_dk(vin_d):
             return None
 
 
-async def load_vins(fname: str):
+async def load_vins(fname: Path):
     with open(fname, "r") as f:
         vins = f.read().split('\n')
     items_arr = []
