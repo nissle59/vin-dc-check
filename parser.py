@@ -72,25 +72,32 @@ class VinDcCheck:
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             c = 0
             while c <= config.tries:
-                if proxy:
-                    r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
-                else:
-                    r = self.session.post(self.dc_check_url, data=params, verify=False)
                 try:
-                    # print(r.text)
-                    res = r.json()
-                    try:
-                        if res.get('code', 200) in ['201', 201]:
-                            time.sleep(1)
-                            print('Captcha error, retrying...')
-                            self.get_vin_code(vin_code, proxy)
-                    except Exception as e:
-                        print(e)
-                    res = res.get('RequestResult').get('diagnosticCards')
-                    return res
+                    if proxy:
+                        r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+                    else:
+                        r = self.session.post(self.dc_check_url, data=params, verify=False)
+                    c += 1
                 except Exception as e:
                     print(e)
-                    res = None
+                    proxy = next(config.r_proxies)
+                    c += 1
+
+            try:
+                # print(r.text)
+                res = r.json()
+                try:
+                    if res.get('code', 200) in ['201', 201]:
+                        time.sleep(1)
+                        print('Captcha error, retrying...')
+                        self.get_vin_code(vin_code, proxy)
+                except Exception as e:
+                    print(e)
+                res = res.get('RequestResult').get('diagnosticCards')
+                return res
+            except Exception as e:
+                print(e)
+                res = None
             return {'status': 'error', 'msg': f'Can\'t get vin with {c} tries, captcha OK'}
 
         elif c > config.tries:
