@@ -48,7 +48,7 @@ async def dk_previous(vin_code):
 async def update_proxies():
     proxies = parser.get_proxies_from_url()
     config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{proxy["port"]}',
-                       'https': f'https://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
+                       'https': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
     return await sql_adapter.update_proxies(proxies)

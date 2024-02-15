@@ -48,6 +48,7 @@ class VinDcCheck:
 
     def get_vin_code(self, vin_code, proxy=None):
         c = 1
+        captcha = None
         while c <= config.tries:
             try:
                 captcha = self.get_captcha(proxy)
