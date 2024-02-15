@@ -1,5 +1,6 @@
 import datetime
 import re
+from itertools import cycle
 
 import config
 from database import AsyncDatabase
@@ -162,7 +163,7 @@ async def update_proxies(plist):
     async with AsyncDatabase(**conf) as db:
         query = f'INSERT INTO proxies VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (proxy_id) DO UPDATE SET ip=$2, username=$3, "password"=$4, "type"=$5, enabled=$6, port=$7'
         data = await db.executemany(query, values)
-
+    config.r_proxies = cycle(config.proxies)
     return {
         "count": count,
         "result": data

@@ -15,9 +15,10 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# @app.on_event("startup")
-# async def startup():
-#     Instrumentator().instrument(app).expose(app)
+
+@app.on_event("startup")
+async def startup():
+    await service.update_proxies()
 
 
 @app.get("/findDc")

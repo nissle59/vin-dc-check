@@ -1,3 +1,5 @@
+from itertools import cycle
+
 import config
 import parser
 import sql_adapter
@@ -8,7 +10,11 @@ async def find_dc(vin_code, noproxy):
     if noproxy:
         vin = v.get_vin_code(vin_code)
     else:
-        prx = next(config.r_proxies)
+        try:
+            prx = next(config.r_proxies)
+        except StopIteration:
+            config.r_proxies = cycle(config.proxies)
+            prx = next(config.r_proxies)
         print(f'Use proxy: {prx["https"]}')
         vin = v.get_vin_code(vin_code, prx)
     result = []
