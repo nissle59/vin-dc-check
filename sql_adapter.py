@@ -149,7 +149,7 @@ async def create_vin_act_dk(vin_d):
     # query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT (vin) DO UPDATE SET dc_number='{dc_num}', issue_date='{issue_date}', expiry_date='{expiry_date}', touched_at=now()"
     query = f"INSERT INTO dcs VALUES ($1), ($2), ($3::date), ($4::date), ($5::timestamp), ($6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=($1), issue_date=($3::date), expiry_date=($4::date), touched_at=($5::timestamp)"
     async with AsyncDatabase(**conf) as db:
-        data = await db.execute(query, dc_num, vin_code, issue_date, expiry_date, 'now()', 'now()')
+        data = await db.execute(query, dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt)
         if data is not None:
             for prev_dk in vin_d["previousDcs"]:
                 items_tuple = (prev_dk["dcNumber"], vin_d["body"], convert_to_ts(prev_dk["dcDate"]),
