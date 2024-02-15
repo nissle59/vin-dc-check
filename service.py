@@ -65,3 +65,11 @@ async def update_proxies():
 async def load_vins():
     fname = Path("VIN.txt")
     return await sql_adapter.load_vins(fname)
+
+
+async def scan_vins(noproxy):
+    vins = await sql_adapter.scan_vins_to_update()
+    print(len(vins))
+    for vin in vins:
+        find_dc(vin, noproxy)
+        print(f'{vins.index(vin)} of {len(vins)} VINs processed...')

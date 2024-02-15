@@ -111,6 +111,20 @@ async def find_vin_act_dk(vin):
     return data
 
 
+async def scan_vins_to_update():
+    query = "select vin from dcs where dc_number isnull or expiry_date < now() "
+
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return {}
+
+    data = [item['vin'] for item in list_detector_to_list(data)]
+
+    return data
+
+
 async def find_vin_prev_dk(vin):
     query = f"SELECT * FROM dk_previous WHERE vin = '{vin}'"
 
