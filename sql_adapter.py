@@ -143,8 +143,8 @@ async def create_vin_act_dk(vin_d):
     nowdt = del_tz(datetime.datetime.now())
     dc_num = vin_d['dcNumber']
     vin_code = vin_d['body']
-    issue_date = convert_to_ts(vin_d["dcDate"])
-    expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
+    issue_date = convert_to_ts(vin_d["dcDate"]).date()
+    expiry_date = convert_to_ts(vin_d["dcExpirationDate"]).date()
     items_tuple = (dc_num, vin_code, issue_date, expiry_date, 'now()', 'now()')
     # query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT (vin) DO UPDATE SET dc_number='{dc_num}', issue_date='{issue_date}', expiry_date='{expiry_date}', touched_at=now()"
     query = f"INSERT INTO dcs VALUES ($1), ($2), ($3), ($4), ($5), ($6) ON CONFLICT (vin) DO UPDATE SET dc_number=($1), issue_date=($3), expiry_date=($4), touched_at=($5)"
@@ -156,8 +156,8 @@ async def create_vin_act_dk(vin_d):
                                convert_to_ts(prev_dk["dcExpirationDate"]))
                 query = f"INSERT INTO dk_previous VALUES ($1), ($2), ($3), ($4) ON CONFLICT DO NOTHING"
                 prev_data = await db.execute(query, prev_dk["dcNumber"], vin_d["body"],
-                                             convert_to_ts(prev_dk["dcDate"]),
-                                             convert_to_ts(prev_dk["dcExpirationDate"]))
+                                             convert_to_ts(prev_dk["dcDate"]).date(),
+                                             convert_to_ts(prev_dk["dcExpirationDate"])).date()
             return True
         else:
             return None
