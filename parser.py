@@ -72,8 +72,8 @@ class VinDcCheck:
                         time.sleep(1)
                         print('Captcha error, retrying...')
                         self.get_vin_code(vin_code, proxy)
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
                 res = res.get('RequestResult').get('diagnosticCards')
                 return res
             except Exception as e:

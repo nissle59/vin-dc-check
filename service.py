@@ -5,7 +5,12 @@ import sql_adapter
 
 async def find_dc(vin_code, noproxy):
     v = parser.VinDcCheck()
-    vin = v.get_vin_code(vin_code)
+    if noproxy:
+        vin = v.get_vin_code(vin_code)
+    else:
+        prx = next(config.r_proxies)
+        print(f'Use proxy: {prx["https"]}')
+        vin = v.get_vin_code(vin_code, prx)
     result = []
     if vin:
         if len(vin) == 1:
