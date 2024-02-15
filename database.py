@@ -64,7 +64,7 @@ class AsyncDatabase:
 
         return res
 
-    async def execute(self, query: str, values=None) -> bool:
+    async def execute(self, query: str, *values) -> bool:
         if self.conn is None:
             raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
 
