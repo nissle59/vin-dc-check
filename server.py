@@ -21,9 +21,9 @@ app.add_middleware(
 
 
 @app.get("/findDc")
-async def getdc(vin):
+async def getdc(vin, noproxy=False):
     res = json.dumps(
-        await service.find_dc(vin),
+        await service.find_dc(vin, noproxy),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,

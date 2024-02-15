@@ -3,7 +3,7 @@ import parser
 import sql_adapter
 
 
-async def find_dc(vin_code):
+async def find_dc(vin_code, noproxy):
     v = parser.VinDcCheck()
     vin = v.get_vin_code(vin_code)
     result = []
@@ -36,6 +36,8 @@ async def dk_previous(vin_code):
 
 async def update_proxies():
     proxies = parser.get_proxies_from_url()
-    config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}'} for proxy in
+    config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{proxy["port"]}',
+                       'https': f'https://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
+                      for proxy in
                       sql_adapter.get_active_proxies('HTTPS')]
     return await sql_adapter.update_proxies(proxies)

@@ -155,11 +155,12 @@ async def update_proxies(plist):
         password = item['password']
         pr_type = item['type']
         enabled = item['enabled']
-        items_tuple = (proxy_id, ip, username, password, pr_type, enabled)
+        port = int(item["port"])
+        items_tuple = (proxy_id, ip, username, password, pr_type, enabled, port)
         values.append(items_tuple)
         count += 1
     async with AsyncDatabase(**conf) as db:
-        query = f'INSERT INTO proxies VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (proxy_id) DO UPDATE SET ip=$2, username=$3, "password"=$4, "type"=$5, enabled=$6'
+        query = f'INSERT INTO proxies VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (proxy_id) DO UPDATE SET ip=$2, username=$3, "password"=$4, "type"=$5, enabled=$6, port=$7'
         data = await db.executemany(query, values)
 
     return {
