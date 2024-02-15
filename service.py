@@ -15,7 +15,7 @@ async def find_dc(vin_code, noproxy):
         except StopIteration:
             config.r_proxies = cycle(config.proxies)
             prx = next(config.r_proxies)
-        print(f'Use proxy: {prx["https"]}')
+        print(f'Use proxy: {prx["http"]}')
         vin = v.get_vin_code(vin_code, prx)
     result = []
     if vin:
