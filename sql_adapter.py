@@ -146,6 +146,23 @@ async def create_vin_act_dk(vin_d):
             return None
 
 
+async def load_vins(fname: str):
+    with open(fname, "r") as f:
+        vins = f.read().split('\n')
+    items_arr = []
+    for vin in vins:
+        vin = vin.strip()
+        items_tuple = (vin,)
+        items_arr.append(items_tuple)
+    query = f"INSERT INTO dcs(vin) VALUES {items_arr} ON CONFLICT (vin) DO NOTHING"
+    async with AsyncDatabase(**conf) as db:
+        data = await db.execute(query)
+        if data is not None:
+            return True
+        else:
+            return None
+
+
 async def update_proxies(plist):
     count = 0
     values = []

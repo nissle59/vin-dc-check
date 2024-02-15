@@ -102,6 +102,32 @@ async def dk_previous(vin):
         )
 
 
+@app.get("/load_vins")
+async def load_vins():
+    res = json.dumps(
+        await service.load_vins(),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )
+
 @app.get("/update_proxy_list")
 async def upd_prx():
     res = json.dumps(

@@ -59,3 +59,8 @@ async def update_proxies():
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
     return await sql_adapter.update_proxies(proxies)
+
+
+async def load_vins():
+    fname = '/opt/VIN.txt'
+    return await sql_adapter.load_vins(fname)
