@@ -39,5 +39,5 @@ async def update_proxies():
     config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{proxy["port"]}',
                        'https': f'https://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
                       for proxy in
-                      sql_adapter.get_active_proxies('HTTPS')]
+                      await sql_adapter.get_active_proxies('HTTPS')]
     return await sql_adapter.update_proxies(proxies)
