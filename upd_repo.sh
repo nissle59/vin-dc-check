@@ -1,0 +1,2 @@
+git pull
+docker restart parser_vin_dc_gibdd
