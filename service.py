@@ -71,5 +71,5 @@ async def scan_vins(noproxy):
     vins = await sql_adapter.scan_vins_to_update()
     print(len(vins))
     for vin in vins:
-        find_dc(vin, noproxy)
+        await find_dc(vin, noproxy)
         print(f'{vins.index(vin)} of {len(vins)} VINs processed...')
