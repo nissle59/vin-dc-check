@@ -64,12 +64,12 @@ class AsyncDatabase:
 
         return res
 
-    async def execute(self, query: str, *values) -> bool:
+    async def execute(self, query: str, *args) -> bool:
         if self.conn is None:
             raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
 
         try:
-            res = await self.conn.execute(query, values)
+            res = await self.conn.execute(query, *args)
         except Exception as e:
             config.logger.info(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
