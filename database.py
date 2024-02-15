@@ -69,7 +69,7 @@ class AsyncDatabase:
             raise DBNotConnected('Нет подключения к БД! Используйте в блоке async with!')
 
         try:
-            res = await self.conn.execute(query, *args)
+            res = await self.conn.execute(query, args)
         except Exception as e:
             config.logger.info(f'***\nОшибка при запросе к БД: {e}\n{query}\n***')
             return None
