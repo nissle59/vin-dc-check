@@ -21,11 +21,11 @@ class Anticaptcha():
             'body': b64image,
             'key': self.token
         }
-        print(data)
-        print(self.token)
+        # print(data)
+        # print(self.token)
         r = requests.post(self.uin, data=data)
         if r:
-            print(r.text)
+            #print(r.text)
             buf = r.text.split('|')
             status = buf[0]
             self.id = buf[1]
