@@ -63,5 +63,5 @@ async def update_proxies():
 
 
 async def load_vins():
-    fname = Path('/opt/VIN.txt')
+    fname = Path("VIN.txt")
     return await sql_adapter.load_vins(fname)
