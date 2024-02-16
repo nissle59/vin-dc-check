@@ -119,7 +119,7 @@ class VinDcCheck:
                         config.logger.debug(f'Trying proxy {prx["http"]}')
                     vin = self.get_vin_code(vin, prx)
                     try:
-                        future = asyncio.run_coroutine_threadsafe(sql_adapter.create_vin_act_dk(vin), loop)
+                        future = asyncio.run(sql_adapter.create_vin_act_dk(vin))
                         rrr = future.result()
                         config.logger.info(rrr)
                     except Exception as e:
