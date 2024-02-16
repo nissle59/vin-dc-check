@@ -142,7 +142,7 @@ async def find_vin_prev_dk(vin):
 async def create_vin_act_dk(vin_d):
     nowdt = del_tz(datetime.datetime.now())
     dc_num = vin_d['dcNumber']
-    vin_code = vin_d['body']
+    vin_code = vin_d['vin']
     issue_date = convert_to_ts(vin_d["dcDate"])
     expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
     items_tuple = [dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt]
@@ -152,10 +152,36 @@ async def create_vin_act_dk(vin_d):
         data = await db.execute(query, items_tuple)
         if data is not None:
             for prev_dk in vin_d["previousDcs"]:
-                items_tuple = [prev_dk["dcNumber"], vin_d["body"], convert_to_ts(prev_dk["dcDate"]),
+                items_tuple = [prev_dk["dcNumber"], vin_d["vin"], convert_to_ts(prev_dk["dcDate"]),
                                convert_to_ts(prev_dk["dcExpirationDate"])]
                 query = f"INSERT INTO dk_previous VALUES ($1, $2, $3::date, $4::date) ON CONFLICT DO NOTHING"
                 prev_data = await db.execute(query, items_tuple)
+            return True
+        else:
+            return None
+
+
+async def create_vins_act_dk(vins_l):
+    items_arr = []
+    prev_arr = []
+    for vin_d in vins_l:
+        nowdt = del_tz(datetime.datetime.now())
+        dc_num = vin_d['dcNumber']
+        vin_code = vin_d['vin']
+        issue_date = convert_to_ts(vin_d["dcDate"])
+        expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
+        items_tuple = (dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt)
+        items_arr.append(items_tuple)
+        for prev_dk in vin_d["previousDcs"]:
+            prev_tuple = (prev_dk["dcNumber"], vin_d["vin"], convert_to_ts(prev_dk["dcDate"]),
+                          convert_to_ts(prev_dk["dcExpirationDate"]))
+            prev_arr.append(prev_tuple)
+    query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp"
+    async with AsyncDatabase(**conf) as db:
+        data = await db.executemany(query, items_arr)
+        query = f"INSERT INTO dk_previous VALUES ($1, $2, $3::date, $4::date) ON CONFLICT DO NOTHING"
+        prev_data = await db.executemany(query, prev_arr)
+        if data is not None:
             return True
         else:
             return None

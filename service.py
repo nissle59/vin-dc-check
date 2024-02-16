@@ -6,6 +6,20 @@ import parser
 import sql_adapter
 
 
+async def multithreaded_find_dcs(use_proxy=True):
+    vins = sql_adapter.scan_vins_to_update()
+    v = parser.VinDcCheck()
+    res = v.multithreading_get_vins(vins, use_proxy)
+
+    if len(res) > 0:
+        result = await sql_adapter.create_vins_act_dk(res)
+    else:
+        result = None
+
+    return result
+
+
+
 async def find_dc(vin_code, noproxy):
     v = parser.VinDcCheck()
     c = 0

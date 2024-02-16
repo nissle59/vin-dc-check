@@ -1,5 +1,7 @@
+import threading
 import time
 import warnings
+from itertools import cycle
 
 import requests
 
@@ -75,15 +77,76 @@ class VinDcCheck:
                         self.get_vin_code(vin_code, proxy)
                 except Exception as e:
                     config.logger.info(e)
+                    with open(f'{vin_code}.respone', 'w') as f:
+                        f.write(str(r.status_code) + '\n' + r.text)
+
                 res = res.get('RequestResult').get('diagnosticCards')
+                for r in res:
+                    r['vin'] = vin_code
                 return res
             except Exception as e:
                 config.logger.info(e)
                 res = None
                 return res
 
+    def get_vin_codes(self, vins: list, use_proxy=False):
+        result = []
+        for vin in vins:
+            # self.get_vin_code(vin, proxy)
+            c = 0
+            prx = None
+            while c <= config.tries:
+                try:
+                    if use_proxy:
+                        prx = next(config.r_proxies)
+                        config.logger.info(f'Trying proxy {prx["http"]}')
+                    vin = self.get_vin_code(vin, prx)
+                    result.append(vin)
+                    break
+                except StopIteration:
+                    if use_proxy:
+                        config.r_proxies = cycle(config.proxies)
+                        prx = next(config.r_proxies)
+                    c += 1
+                except Exception as e:
+                    config.logger.info(e)
+                    if use_proxy:
+                        prx = next(config.r_proxies)
+                    c += 1
+
     def multithreading_get_vins(self, vins, use_proxy=True):
-        pass
+        t_s = []
+        tc = config.threads
+        l_count, l_mod = divmod(len(vins), tc)
+        l_mod = len(vins) % tc
+        if l_mod != 0:
+
+            l_mod = len(vins) % config.threads
+            if l_mod == 0:
+                tc = config.threads
+                l_count = len(vins) // tc
+
+            else:
+                tc = config.threads - 1
+                l_count = len(vins) // tc
+
+        l_c = []
+        for i in range(0, config.threads):
+            config.logger.info(f'{i + 1} of {config.threads}')
+
+            l_c.append(vins[l_count * i:l_count * i + l_count])
+
+        for i in range(0, config.threads):
+            t_s.append(
+                threading.Thread(target=self.get_vin_codes, args=(l_c[i], use_proxy), daemon=True))
+        for t in t_s:
+            t.start()
+            config.logger.info(f'Started thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
+
+        for t in t_s:
+            t.join()
+            config.logger.info(f'Joined thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
+
 
 if __name__ == '__main__':
     pass

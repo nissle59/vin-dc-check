@@ -21,6 +21,33 @@ async def startup():
     await service.update_proxies()
 
 
+@app.get("/mFindDc")
+async def mdc(use_proxy=True):
+    res = json.dumps(
+        await service.multithreaded_find_dcs(use_proxy),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )
+
+
 @app.get("/findDc")
 async def getdc(vin, noproxy=False):
     res = json.dumps(
