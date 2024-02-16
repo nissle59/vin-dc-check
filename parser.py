@@ -49,6 +49,7 @@ class VinDcCheck:
         return self.solver.resolve_captcha(captcha_img_b64)
 
     def get_vin_code(self, vin_code, proxy=None):
+        config.logger.info(f'{vin_code} - Start')
         captcha = self.get_captcha(proxy)
         if captcha:
             c_token = captcha.get('token')
@@ -73,24 +74,26 @@ class VinDcCheck:
 
                 if res.get('code', 200) in ['201', 201]:
                     time.sleep(1)
-                    config.logger.info(f'{vin_code} Captcha error, retrying...')
+                    config.logger.debug(f'{vin_code} Captcha error, retrying...')
                     return self.get_vin_code(vin_code, proxy)
 
                 result = res.get('RequestResult').get('diagnosticCards')
                 for r in result:
                     r['vin'] = vin_code
+                config.logger.info(f'{vin_code} - Success')
 
             except Exception as e:
                 if res.get('code', 200) in ['201', 201]:
                     pass
                 else:
-                    config.logger.info(e)
+                    config.logger.debug(e)
                     with open(f'responses/{vin_code}.txt', 'w') as f:
                         ex = ''
                         for arg in e.args:
                             ex += arg + '\n'
                         f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                 result = None
+                config.logger.info(f'{vin_code} - Failed')
             return result
 
     def get_vin_codes(self, vins: list, use_proxy=False):

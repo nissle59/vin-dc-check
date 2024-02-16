@@ -11,6 +11,7 @@ class Anticaptcha():
         self.token = token
         self.id = None
         self.session = requests.session()
+        # self.logger = logging.getLogger('Anticaptcha')
         self.session.headers.update({
             "Content-Type": "application/x-www-form-urlencoded"
         })
