@@ -83,7 +83,7 @@ class VinDcCheck:
                 return res
             except Exception as e:
                 config.logger.debug(e)
-                with open(f'{vin_code}.respones', 'w') as f:
+                with open(f'responses/{vin_code}.txt', 'w') as f:
                     ex = ''
                     for arg in e.args:
                         ex += arg + '\n'
