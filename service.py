@@ -85,6 +85,6 @@ async def load_vins():
 async def scan_vins(noproxy):
     vins = await sql_adapter.scan_vins_to_update()
 
-    for vin in vins:
-        await find_dc(vin, noproxy)
-        config.logger.info(f'{vins.index(vin)} of {len(vins)} VINs processed...')
+    # for vin in vins:
+    #     await find_dc(vin, noproxy)
+    #     config.logger.info(f'{vins.index(vin)} of {len(vins)} VINs processed...')
