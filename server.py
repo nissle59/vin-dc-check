@@ -1,8 +1,10 @@
 import json
+import random
 
 from fastapi import FastAPI, responses
 from fastapi.middleware.cors import CORSMiddleware
 
+import config
 import service
 
 app = FastAPI()
@@ -19,6 +21,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await service.update_proxies()
+    for i in random.randint(0, len(config.proxies)):
+        next(config.r_proxies)
 
 
 @app.get("/mFindDc")

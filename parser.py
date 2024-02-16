@@ -30,7 +30,11 @@ class VinDcCheck:
 
     def get_captcha(self, proxy=None):
         if proxy:
-            r = self.session.get(self.captch_req_url, verify=False, proxies=proxy)
+            try:
+                r = self.session.get(self.captch_req_url, verify=False, proxies=proxy)
+            except requests.exceptions.SSLError as ssl_error:
+                proxy = next(config.r_proxies)
+                return self.get_captcha(proxy)
         else:
             r = self.session.get(self.captch_req_url, verify=False)
         if r:
@@ -65,7 +69,11 @@ class VinDcCheck:
             }
             self.session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             if proxy:
-                r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+                try:
+                    r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
+                except requests.exceptions.SSLError as ssl_error:
+                    proxy = next(config.r_proxies)
+                    return self.get_vin_code(vin_code, proxy)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
             try:
