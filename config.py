@@ -26,3 +26,4 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.addHandler(s_handler)
 logger.setLevel(logging.INFO)
+logger.propagate = False
