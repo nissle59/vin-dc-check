@@ -82,9 +82,12 @@ class VinDcCheck:
                     r['vin'] = vin_code
                 return res
             except Exception as e:
-                config.logger.info(e)
-                with open(f'{vin_code}.respone', 'w') as f:
-                    f.write(str(r.status_code) + '\n' + r.text)
+                config.logger.debug(e)
+                with open(f'{vin_code}.respones', 'w') as f:
+                    ex = ''
+                    for arg in e.args:
+                        ex += arg + '\n'
+                    f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                 res = None
                 return res
 
