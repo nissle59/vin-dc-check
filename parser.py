@@ -75,6 +75,7 @@ class VinDcCheck:
                     r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
                 except requests.exceptions.SSLError as ssl_error:
                     proxy = next(config.r_proxies)
+                    config.logger.info(f'{proxy} - SSL Error: {ssl_error}, change proxy')
                     return self.get_vin_code(vin_code, proxy)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
@@ -118,9 +119,7 @@ class VinDcCheck:
                         prx = next(config.r_proxies)
                         config.logger.debug(f'Trying proxy {prx["http"]}')
                     vin = self.get_vin_code(vin, prx)
-                    future = asyncio.run(sql_adapter.create_vin_act_dk(vin))
-                    rrr = future.result()
-                    config.logger.info(rrr)
+                    asyncio.run(sql_adapter.create_vin_act_dk(vin))
                     result.append(vin)
                     break
                 except StopIteration:
