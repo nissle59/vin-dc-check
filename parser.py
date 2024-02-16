@@ -49,7 +49,7 @@ class VinDcCheck:
         return self.solver.resolve_captcha(captcha_img_b64)
 
     def get_vin_code(self, vin_code, proxy=None):
-        config.logger.info(f'{vin_code} - Start')
+        config.logger.debug(f'{vin_code} - Start')
         captcha = self.get_captcha(proxy)
         if captcha:
             c_token = captcha.get('token')
@@ -93,7 +93,7 @@ class VinDcCheck:
                             ex += arg + '\n'
                         f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                 result = None
-                config.logger.info(f'{vin_code} - Failed')
+                config.logger.debug(f'{vin_code} - Failed')
             return result
 
     def get_vin_codes(self, vins: list, use_proxy=False):
@@ -106,7 +106,7 @@ class VinDcCheck:
                 try:
                     if use_proxy:
                         prx = next(config.r_proxies)
-                        config.logger.info(f'Trying proxy {prx["http"]}')
+                        config.logger.debug(f'Trying proxy {prx["http"]}')
                     vin = self.get_vin_code(vin, prx)
                     result.append(vin)
                     break
