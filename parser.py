@@ -1,3 +1,4 @@
+import asyncio
 import threading
 import time
 import warnings
@@ -6,6 +7,7 @@ from itertools import cycle
 import requests
 
 import config
+import sql_adapter
 from anticaptcha import Anticaptcha
 
 warnings.filterwarnings("ignore")
@@ -106,6 +108,7 @@ class VinDcCheck:
 
     def get_vin_codes(self, vins: list, use_proxy=False):
         result = []
+        loop = asyncio.new_event_loop()
         for vin in vins:
             # self.get_vin_code(vin, proxy)
             c = 0
@@ -116,6 +119,10 @@ class VinDcCheck:
                         prx = next(config.r_proxies)
                         config.logger.debug(f'Trying proxy {prx["http"]}')
                     vin = self.get_vin_code(vin, prx)
+                    try:
+                        future = asyncio.run_coroutine_threadsafe(sql_adapter.create_vin_act_dk(vin), loop)
+                    except:
+                        pass
                     result.append(vin)
                     break
                 except StopIteration:
