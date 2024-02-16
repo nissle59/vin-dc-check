@@ -6,6 +6,7 @@ from itertools import cycle
 import requests
 
 import config
+import sql_adapter
 from anticaptcha import Anticaptcha
 
 warnings.filterwarnings("ignore")
@@ -118,6 +119,7 @@ class VinDcCheck:
                         config.logger.debug(f'Trying proxy {prx["http"]}')
                     vin = self.get_vin_code(vin, prx)
                     # asyncio.run(sql_adapter.create_vin_act_dk(vin))
+                    sql_adapter.create_vin_act_dk(vin)
                     result.append(vin)
                     break
                 except StopIteration:
