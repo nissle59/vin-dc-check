@@ -121,8 +121,9 @@ class VinDcCheck:
                     vin = self.get_vin_code(vin, prx)
                     try:
                         future = asyncio.run_coroutine_threadsafe(sql_adapter.create_vin_act_dk(vin), loop)
-                    except:
-                        pass
+                        rrr = future.result()
+                    except Exception as e:
+                        config.logger.info(e)
                     result.append(vin)
                     break
                 except StopIteration:
