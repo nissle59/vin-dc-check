@@ -74,7 +74,7 @@ class VinDcCheck:
                     if res.get('code', 200) in ['201', 201]:
                         time.sleep(1)
                         config.logger.info(f'{vin_code} Captcha error, retrying...')
-                        self.get_vin_code(vin_code, proxy)
+                        return self.get_vin_code(vin_code, proxy)
                 except Exception as e:
                     config.logger.debug(e)
                 res = res.get('RequestResult').get('diagnosticCards')
