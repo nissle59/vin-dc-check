@@ -108,7 +108,6 @@ class VinDcCheck:
 
     def get_vin_codes(self, vins: list, use_proxy=False):
         result = []
-        loop = asyncio.new_event_loop()
         for vin in vins:
             # self.get_vin_code(vin, proxy)
             c = 0
@@ -122,6 +121,7 @@ class VinDcCheck:
                     try:
                         future = asyncio.run_coroutine_threadsafe(sql_adapter.create_vin_act_dk(vin), loop)
                         rrr = future.result()
+                        config.logger.info(rrr)
                     except Exception as e:
                         config.logger.info(e)
                     result.append(vin)
