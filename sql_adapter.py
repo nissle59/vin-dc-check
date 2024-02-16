@@ -140,6 +140,7 @@ async def find_vin_prev_dk(vin):
 
 
 async def create_vin_act_dk(vin_d):
+    config.logger.info(f'{vin_d["vin"]} SQL Insert...')
     nowdt = del_tz(datetime.datetime.now())
     dc_num = vin_d['dcNumber']
     vin_code = vin_d['vin']
