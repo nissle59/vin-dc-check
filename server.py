@@ -21,7 +21,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await service.update_proxies()
-    for i in random.randint(0, len(config.proxies)):
+    for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
 
 
