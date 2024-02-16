@@ -76,13 +76,13 @@ class VinDcCheck:
                         config.logger.info(f'{vin_code} Captcha error, retrying...')
                         return self.get_vin_code(vin_code, proxy)
                 except Exception as e:
-                    config.logger.debug(e)
+                    config.logger.info(e)
                 res = res.get('RequestResult').get('diagnosticCards')
                 for r in res:
                     r['vin'] = vin_code
                 return res
             except Exception as e:
-                config.logger.debug(e)
+                config.logger.info(e)
                 with open(f'responses/{vin_code}.txt', 'w') as f:
                     ex = ''
                     for arg in e.args:
