@@ -70,26 +70,28 @@ class VinDcCheck:
             try:
                 # config.logger.info(r.text)
                 res = r.json()
-                try:
-                    if res.get('code', 200) in ['201', 201]:
-                        time.sleep(1)
-                        config.logger.info(f'{vin_code} Captcha error, retrying...')
-                        return self.get_vin_code(vin_code, proxy)
-                except Exception as e:
-                    config.logger.info(e)
-                res = res.get('RequestResult').get('diagnosticCards')
-                for r in res:
+
+                if res.get('code', 200) in ['201', 201]:
+                    time.sleep(1)
+                    config.logger.info(f'{vin_code} Captcha error, retrying...')
+                    return self.get_vin_code(vin_code, proxy)
+
+                result = res.get('RequestResult').get('diagnosticCards')
+                for r in result:
                     r['vin'] = vin_code
-                return res
+
             except Exception as e:
-                config.logger.info(e)
-                with open(f'responses/{vin_code}.txt', 'w') as f:
-                    ex = ''
-                    for arg in e.args:
-                        ex += arg + '\n'
-                    f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
-                res = None
-                return res
+                if res.get('code', 200) in ['201', 201]:
+                    pass
+                else:
+                    config.logger.info(e)
+                    with open(f'responses/{vin_code}.txt', 'w') as f:
+                        ex = ''
+                        for arg in e.args:
+                            ex += arg + '\n'
+                        f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
+                result = None
+            return result
 
     def get_vin_codes(self, vins: list, use_proxy=False):
         result = []
