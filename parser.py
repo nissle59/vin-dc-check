@@ -21,6 +21,7 @@ def get_proxies_from_url(url=f"http://api-external.tm.8525.ru/proxies?token=5jos
 
 class VinDcCheck:
     def __init__(self):
+        self.results = []
         self.captch_req_url = 'https://check.gibdd.ru/captcha'
         self.dc_check_url = 'https://xn--b1afk4ade.xn--90adear.xn--p1ai/proxy/check/auto/diagnostic'
         self.session = requests.Session()
@@ -106,7 +107,6 @@ class VinDcCheck:
             return result
 
     def get_vin_codes(self, vins: list, use_proxy=False):
-        result = []
         for vin in vins:
             # self.get_vin_code(vin, proxy)
             c = 0
@@ -119,7 +119,7 @@ class VinDcCheck:
                     vin = self.get_vin_code(vin, prx)
                     # asyncio.run(sql_adapter.create_vin_act_dk(vin))
                     # sql_adapter.create_vin_act_dk(vin)
-                    result.append(vin)
+                    self.results.append(vin)
                     break
                 except StopIteration:
                     if use_proxy:
@@ -131,9 +131,9 @@ class VinDcCheck:
                     if use_proxy:
                         prx = next(config.r_proxies)
                     c += 1
-        return result
 
     def multithreading_get_vins(self, vins, use_proxy=True):
+        self.results = []
         t_s = []
         tc = config.threads
         l_count, l_mod = divmod(len(vins), tc)

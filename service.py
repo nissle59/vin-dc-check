@@ -10,12 +10,12 @@ async def multithreaded_find_dcs(use_proxy=True):
     vins = await sql_adapter.scan_vins_to_update()
     config.logger.info(vins)
     v = parser.VinDcCheck()
-    res = v.multithreading_get_vins(vins, use_proxy)
-    print(res)
+    v.multithreading_get_vins(vins, use_proxy)
+    print(v.results)
     result = None
-    if res:
-        if len(res) > 0:
-            result = await sql_adapter.create_vins_act_dk(res)
+    if v.results:
+        if len(v.results) > 0:
+            result = await sql_adapter.create_vins_act_dk(v.results)
 
     return result
 
