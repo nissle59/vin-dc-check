@@ -163,9 +163,10 @@ async def load_vins():
 
 
 @app.get('/scan_vins')
-async def scan_vins(noproxy=False):
+async def scan_vins(touched_at=7):
+    config.touched_at = touched_at
     res = json.dumps(
-        await service.scan_vins(noproxy),
+        await service.scan_vins(),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
