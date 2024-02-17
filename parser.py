@@ -99,6 +99,7 @@ class VinDcCheck:
                     pass
                 else:
                     config.logger.debug(e)
+                    # if RequestResult.status in ['NO_DATA','ERROR']: need catcher
                     with open(f'responses/{vin_code}.txt', 'w') as f:
                         ex = ''
                         for arg in e.args:
