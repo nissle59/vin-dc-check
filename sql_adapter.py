@@ -112,7 +112,7 @@ async def find_vin_act_dk(vin):
 
 
 async def scan_vins_to_update():
-    query = "select vin, created_at from dcs where dc_number is null or expiry_date < now() "
+    query = "select vin, created_at from dcs where dc_number is null or expiry_date < now() or created_at is null"
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
