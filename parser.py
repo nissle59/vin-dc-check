@@ -119,7 +119,7 @@ class VinDcCheck:
                     vin = self.get_vin_code(vin, prx)
                     # asyncio.run(sql_adapter.create_vin_act_dk(vin))
                     # sql_adapter.create_vin_act_dk(vin)
-                    self.results.append(vin)
+                    self.results.append(vin[0])
                     break
                 except StopIteration:
                     if use_proxy:
