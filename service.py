@@ -11,7 +11,7 @@ async def multithreaded_find_dcs(use_proxy=True):
     config.logger.info(vins)
     v = parser.VinDcCheck()
     res = v.multithreading_get_vins(vins, use_proxy)
-
+    print(res)
     result = None
     if res:
         if len(res) > 0:
