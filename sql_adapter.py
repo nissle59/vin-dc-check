@@ -120,7 +120,7 @@ async def scan_vins_to_update():
     if data is None:
         return []
     config.logger.info(data)
-    data = [{'vin': item['vin'], 'created_at': item['created_at']} for item in list_detector_to_list(data)]
+    data = [{'vin': item['vin'], 'createdAt': item['createdAt']} for item in list_detector_to_list(data)]
 
     return data
 
