@@ -132,6 +132,7 @@ class VinDcCheck:
                     if use_proxy:
                         prx = next(config.r_proxies)
                     c += 1
+        return result
 
     def multithreading_get_vins(self, vins, use_proxy=True):
         t_s = []
