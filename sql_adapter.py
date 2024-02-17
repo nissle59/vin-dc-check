@@ -112,7 +112,7 @@ async def find_vin_act_dk(vin):
 
 
 async def scan_vins_to_update():
-    query = "select vin from dcs where dc_number is null or expiry_date < now() "
+    query = "select vin, created_at from dcs where dc_number is null or expiry_date < now() "
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
@@ -120,7 +120,7 @@ async def scan_vins_to_update():
     if data is None:
         return []
 
-    data = [item['vin'] for item in list_detector_to_list(data)]
+    data = [{'vin': item['vin'], 'created_at': item['created_at']} for item in list_detector_to_list(data)]
 
     return data
 
@@ -139,8 +139,8 @@ async def find_vin_prev_dk(vin):
     return data
 
 
-async def create_vin_act_dk(vin_d):
-    config.logger.info(f'{vin_d["vin"]} SQL Insert...')
+async def create_vin_act_dk(vin_d, force_rewrite=False):
+    config.logger.debug(f'{vin_d["vin"]} SQL Insert...')
     nowdt = del_tz(datetime.datetime.now())
     dc_num = vin_d['dcNumber']
     vin_code = vin_d['vin']
@@ -148,7 +148,10 @@ async def create_vin_act_dk(vin_d):
     expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
     items_tuple = [dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt]
     # query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT (vin) DO UPDATE SET dc_number='{dc_num}', issue_date='{issue_date}', expiry_date='{expiry_date}', touched_at=now()"
-    query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp"
+    if force_rewrite:
+        query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp, created_at=$6::timestamp"
+    else:
+        query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp"
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
         if data is not None:
