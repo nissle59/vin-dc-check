@@ -73,7 +73,7 @@ class VinDcCheck:
                     r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
                 except requests.exceptions.SSLError as ssl_error:
                     proxy = next(config.r_proxies)
-                    config.logger.info(f'{proxy} - SSL Error: {ssl_error}, change proxy')
+                    config.logger.info(f'{proxy["http"].split('@')[1]} - SSL Error: {ssl_error}, change proxy')
                     return self.get_vin_code(vin_code, proxy)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
@@ -89,7 +89,7 @@ class VinDcCheck:
                 result = res.get('RequestResult').get('diagnosticCards')
                 for r in result:
                     r['vin'] = vin_code
-                config.logger.info(f'{vin_code} - {str(r[0]["dcNumber"])}')
+                config.logger.info(f'{vin_code} - {str(result[0]["dcNumber"])}')
 
             except Exception as e:
                 if res.get('code', 200) in ['201', 201]:
