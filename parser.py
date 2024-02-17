@@ -119,7 +119,7 @@ class VinDcCheck:
                     if use_proxy:
                         prx = next(config.r_proxies)
                         config.logger.debug(f'Trying proxy {prx["http"]}')
-                    if not (vin['createdAt']):
+                    if not (vin.get('createdAt', None)):
                         force = True
                     vin = self.get_vin_code(vin['vin'], prx)
                     asyncio.run(sql_adapter.create_vin_act_dk(vin[0], force))
