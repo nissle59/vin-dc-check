@@ -73,7 +73,7 @@ class VinDcCheck:
                     r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=proxy)
                 except requests.exceptions.SSLError as ssl_error:
                     proxy = next(config.r_proxies)
-                    config.logger.info(f'{proxy["http"].split('@')[1]} - SSL Error: {ssl_error}, change proxy')
+                    config.logger.info(f'{proxy["http"].split("@")[1]} - SSL Error: {ssl_error}, change proxy')
                     return self.get_vin_code(vin_code, proxy)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
