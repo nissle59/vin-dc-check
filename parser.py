@@ -89,7 +89,7 @@ class VinDcCheck:
                 result = res.get('RequestResult').get('diagnosticCards')
                 for r in result:
                     r['vin'] = vin_code
-                config.logger.info(f'{vin_code} - {r[0]["125021032400381"]}')
+                config.logger.info(f'{vin_code} - {str(r[0]["dcNumber"])}')
 
             except Exception as e:
                 if res.get('code', 200) in ['201', 201]:
