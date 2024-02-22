@@ -239,8 +239,8 @@ async def get_active_proxies(proxy_type: str):
     return data
 
 
-async def find_vin_active_dcs(vin):
-    query = f"SELECT * FROM dcs_active WHERE vin = '{vin}'"
+async def find_vin_actual_dc(vin):
+    query = f"SELECT * FROM dcs_actual WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
     async with AsyncDatabase(**conf) as db:

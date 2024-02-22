@@ -46,13 +46,13 @@ async def find_dc(vin_code, noproxy):
         if len(vin) == 1:
             vin = vin[0]
             resp = await sql_adapter.create_dc_for_vin(vin)
-            result.append(await sql_adapter.find_vin_active_dcs(vin_code))
+            result.append(await sql_adapter.find_vin_actual_dc(vin_code))
             return result[0]
         elif len(vin) > 1:
             for item in vin:
                 resp = await sql_adapter.create_dc_for_vin(item)
                 if resp:
-                    result.append(await sql_adapter.find_vin_active_dcs(vin_code))
+                    result.append(await sql_adapter.find_vin_actual_dc(vin_code))
             return result
         else:
             return None
@@ -62,7 +62,7 @@ async def find_dc(vin_code, noproxy):
 
 
 async def dc(vin_code):
-    return await sql_adapter.find_vin_active_dcs(vin_code)
+    return await sql_adapter.find_vin_actual_dc(vin_code)
 
 
 async def dcs_ended(vin_code):
