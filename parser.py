@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import threading
 import time
 import warnings
@@ -139,6 +140,8 @@ class VinDcCheck:
                     c += 1
 
     def multithreading_get_vins(self, vins, use_proxy=True):
+        start_dt = datetime.datetime.now()
+        arr_length = len(vins)
         self.results = []
         t_s = []
         tc = config.threads
@@ -175,7 +178,18 @@ class VinDcCheck:
         for t in t_s:
             t.join()
             config.logger.info(f'Joined thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
-
+        stop_dt = datetime.datetime.now()
+        dt_diff = (stop_dt - start_dt).total_seconds()
+        if dt_diff > 60:
+            dt_m, dt_s = divmod(dt_diff, 60)
+            dt_str = f'{arr_length} records: {dt_m} minutes {dt_s} passed'
+        elif dt_diff > 3600:
+            dt_m, dt_s = divmod(dt_diff, 60)
+            dt_h, dt_m = divmod(dt_m, 60)
+            dt_str = f'{arr_length} records: {dt_h} hours {dt_m} minutes {dt_s} passed'
+        else:
+            dt_str = f'{arr_length} records: {dt_diff} seconds passed'
+        config.logger.info(dt_str)
 
 if __name__ == '__main__':
     pass
