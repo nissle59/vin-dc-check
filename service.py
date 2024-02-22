@@ -7,7 +7,7 @@ import sql_adapter
 
 
 async def multithreaded_find_dcs(use_proxy=True):
-    vins = await sql_adapter.scan_vins_to_update()
+    vins = await sql_adapter.get_vins_to_update()
     config.logger.info(vins)
     v = parser.VinDcCheck()
     v.multithreading_get_vins(vins, use_proxy)
@@ -15,7 +15,7 @@ async def multithreaded_find_dcs(use_proxy=True):
     # result = None
     # if v.results:
     #     if len(v.results) > 0:
-    #         result = await sql_adapter.create_vins_act_dk(v.results)
+    #         result = await sql_adapter.create_dc_for_vin_bulk(v.results)
     #
     # return result
 
@@ -45,14 +45,14 @@ async def find_dc(vin_code, noproxy):
     if vin:
         if len(vin) == 1:
             vin = vin[0]
-            resp = await sql_adapter.create_vin_act_dk(vin)
-            result.append(await sql_adapter.find_vin_act_dk(vin_code))
+            resp = await sql_adapter.create_dc_for_vin(vin)
+            result.append(await sql_adapter.find_vin_active_dcs(vin_code))
             return result[0]
         elif len(vin) > 1:
             for item in vin:
-                resp = await sql_adapter.create_vin_act_dk(item)
+                resp = await sql_adapter.create_dc_for_vin(item)
                 if resp:
-                    result.append(await sql_adapter.find_vin_act_dk(vin_code))
+                    result.append(await sql_adapter.find_vin_active_dcs(vin_code))
             return result
         else:
             return None
@@ -62,11 +62,11 @@ async def find_dc(vin_code, noproxy):
 
 
 async def dc(vin_code):
-    return await sql_adapter.find_vin_act_dk(vin_code)
+    return await sql_adapter.find_vin_active_dcs(vin_code)
 
 
-async def dk_previous(vin_code):
-    return await sql_adapter.find_vin_prev_dk(vin_code)
+async def dcs_ended(vin_code):
+    return await sql_adapter.find_vin_ended_dcs(vin_code)
 
 
 async def update_proxies():
@@ -78,10 +78,16 @@ async def update_proxies():
     return await sql_adapter.update_proxies(proxies)
 
 
+async def update_vins():
+    vins = parser.get_vins_from_url()
+    return await sql_adapter.create_vins(vins)
+
+
 async def load_vins():
     fname = Path("VIN.txt")
     return await sql_adapter.load_vins(fname)
 
 
 async def scan_vins():
-    vins = await sql_adapter.scan_vins_to_update(touched_at=config.touched_at)
+    vins = await sql_adapter.get_vins_to_update()
+    return vins

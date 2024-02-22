@@ -26,6 +26,32 @@ async def startup():
     await mdc(True)
 
 
+@app.on_event("/updateVins")
+async def updateVins():
+    res = json.dumps(
+        await service.update_vins(),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )
+
 @app.get("/mFindDc")
 async def mdc(use_proxy=True):
     # config.threads = threads
@@ -111,7 +137,7 @@ async def dc(vin):
 @app.get("/dk_previous")
 async def dk_previous(vin):
     res = json.dumps(
-        await service.dk_previous(vin),
+        await service.dcs_ended(vin),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,

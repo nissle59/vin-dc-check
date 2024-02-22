@@ -23,6 +23,16 @@ camel_pat = re.compile(r'([A-Z])')
 under_pat = re.compile(r'_([a-z])')
 
 
+def get_vins_add_query():
+    query = f"""
+                INSERT INTO 
+                    vin 
+                VALUES ($1) 
+                ON CONFLICT DO NOTHING
+            """
+    return query
+
+
 def get_insert_query(force_rewrite):
     query = f"""
                 INSERT INTO 
@@ -39,9 +49,9 @@ def get_insert_query(force_rewrite):
                     $9,
                     $10,
                     $11
-                ) ON CONFLICT (vin) DO 
+                ) ON CONFLICT (dc_number) DO 
                 UPDATE SET 
-                    dc_number=$1, 
+                    vin=$2, 
                     issue_date=$3::date, 
                     expiry_date=$4::date, 
                     touched_at=$5::timestamp,
@@ -51,7 +61,7 @@ def get_insert_query(force_rewrite):
                     operator_name=$10,
                     operator_address=$11
             """
-    if force_rewrite == True:
+    if force_rewrite:
         query += ",created_at=$6::timestamp"
     return query
 
@@ -59,7 +69,7 @@ def get_insert_query(force_rewrite):
 def get_insert_dk_prev_query():
     query = f"""
                 INSERT INTO 
-                    dk_previous 
+                    dcs_ended 
                 VALUES (
                     $1, 
                     $2, 
@@ -97,51 +107,59 @@ def get_insert_proxy_query():
     return query
 
 
-def set_items_tuple_create_vin_record(vin_d, multi=False):
-    nowdt = del_tz(datetime.datetime.now())
-    if multi is True:
+def set_items_tuple_create_vin_record(vins):
+    items = []
+    for vin in vins:
+        items_tuple = (vin,)
+        items.append(items_tuple)
+    return items
+
+
+def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
+    dt_now_timestamp = del_tz(datetime.datetime.now())
+    if execute_many_flag is True:
         items_tuple = (
-            vin_d['dcNumber'],
-            vin_d['vin'],
-            convert_to_ts(vin_d["dcDate"]),
-            convert_to_ts(vin_d["dcExpirationDate"]),
-            nowdt,
-            nowdt,
-            int(vin_d['odometerValue']),
-            vin_d['model'],
-            vin_d['brand'],
-            vin_d['operatorName'],
-            vin_d['pointAddress']
+            dict_of_vin['dcNumber'],
+            dict_of_vin['vin'],
+            convert_to_ts(dict_of_vin["dcDate"]),
+            convert_to_ts(dict_of_vin["dcExpirationDate"]),
+            dt_now_timestamp,
+            dt_now_timestamp,
+            int(dict_of_vin['odometerValue']),
+            dict_of_vin['model'],
+            dict_of_vin['brand'],
+            dict_of_vin['operatorName'],
+            dict_of_vin['pointAddress']
         )
     else:
         items_tuple = [
-            vin_d['dcNumber'],
-            vin_d['vin'],
-            convert_to_ts(vin_d["dcDate"]),
-            convert_to_ts(vin_d["dcExpirationDate"]),
-            nowdt,
-            nowdt,
-            int(vin_d['odometerValue']),
-            vin_d['model'],
-            vin_d['brand'],
-            vin_d['operatorName'],
-            vin_d['pointAddress']
+            dict_of_vin['dcNumber'],
+            dict_of_vin['vin'],
+            convert_to_ts(dict_of_vin["dcDate"]),
+            convert_to_ts(dict_of_vin["dcExpirationDate"]),
+            dt_now_timestamp,
+            dt_now_timestamp,
+            int(dict_of_vin['odometerValue']),
+            dict_of_vin['model'],
+            dict_of_vin['brand'],
+            dict_of_vin['operatorName'],
+            dict_of_vin['pointAddress']
         ]
     return items_tuple
 
 
-def set_items_arr_for_prev_dks(vin_d):
-    prev_arr = []
-    for prev_dk in vin_d["previousDcs"]:
-        prev_tuple = (
-            prev_dk["dcNumber"],
-            vin_d["vin"],
-            convert_to_ts(prev_dk["dcDate"]),
-            convert_to_ts(prev_dk["dcExpirationDate"]),
-            int(prev_dk['odometerValue'])
+def set_items_arr_for_prev_dks(dict_of_vin):
+    items = []
+    for dc in dict_of_vin["previousDcs"]:
+        item_tuple = (
+            dc["dcNumber"],
+            dict_of_vin["vin"],
+            convert_to_ts(dc["dcDate"]),
+            convert_to_ts(dc["dcExpirationDate"]),
+            int(dc['odometerValue'])
         )
-        prev_arr.append(prev_tuple)
-    return prev_arr
+        items.append(item_tuple)
+    return items
 
 
 def camel_to_underscore(name):
@@ -155,22 +173,22 @@ def underscore_to_camel(name):
 conf = config.DATABASE
 
 
-def list_detector(input):
+def list_detector(input_data):
     new_data = {}
-    if isinstance(input, list):
-        data = [dict(record) for record in input][0]
+    if isinstance(input_data, list):
+        data = [dict(record) for record in input_data][0]
     else:
-        data = dict(input)
+        data = dict(input_data)
     for key, value in data.items():
         new_data[underscore_to_camel(key)] = data.get(key)
     return new_data
 
 
-def list_detector_to_list(input):
-    if isinstance(input, list):
+def list_detector_to_list(input_data):
+    if isinstance(input_data, list):
         new_data = []
-        # data = [dict(record) for record in input]
-        for record in input:
+        # data = [dict(record) for record in input_data]
+        for record in input_data:
             new_d = {}
             record = dict(record)
             for key, value in record.items():
@@ -178,7 +196,7 @@ def list_detector_to_list(input):
             new_data.append(new_d)
     else:
         new_data = {}
-        data = dict(input)
+        data = dict(input_data)
         for key, value in data.items():
             new_data[underscore_to_camel(key)] = data.get(key)
     return new_data
@@ -200,13 +218,13 @@ async def get_setting(setting_name: str):
 
 async def get_active_proxies(proxy_type: str):
     if proxy_type == "HTTPS":
-        t_name = 'https_active_proxies'
+        view_name = 'https_active_proxies'
     elif proxy_type == 'SOCKS5':
-        t_name = 'socks_active_proxies'
+        view_name = 'socks_active_proxies'
     else:
-        t_name = 'active_proxies'
+        view_name = 'active_proxies'
 
-    query = f"SELECT * FROM {t_name}"
+    query = f"SELECT * FROM {view_name}"
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
 
@@ -218,23 +236,56 @@ async def get_active_proxies(proxy_type: str):
     return data
 
 
-async def find_vin_act_dk(vin):
-    query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
+async def find_vin_active_dcs(vin):
+    query = f"SELECT * FROM dcs_active WHERE vin = '{vin}'"
+    # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
 
     if data is None:
-        return {}
+        return []
 
     data = list_detector(data)
 
     return data
 
 
-async def scan_vins_to_update():
-    touched_at = config.touched_at
-    query = f"select vin, created_at from dcs where dc_number is null or expiry_date < now() or created_at is null or (now()-touched_at) >= '{touched_at} days'"
+async def find_vin_canceled_dk(vin):
+    query = f"SELECT * FROM dcs_canceled WHERE vin = '{vin}'"
+    # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
+
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return []
+
+    data = list_detector(data)
+
+    return data
+
+
+async def find_vin_ended_dcs(vin):
+    query = f"SELECT * FROM dcs_ended WHERE vin = '{vin}'"
+    # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
+
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(query)
+
+    if data is None:
+        return []
+
+    data = list_detector(data)
+
+    return data
+
+
+async def get_vins_to_update():
+    # touched_at = config.touched_at
+    query = f"SELECT * FROM vins_to_update"
+    # query = f"select vin, created_at from dcs
+    # where dc_number is null or expiry_date < now() or created_at is null or (now()-touched_at) >= '{touched_at} days'"
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
@@ -247,55 +298,68 @@ async def scan_vins_to_update():
     return data
 
 
-async def find_vin_prev_dk(vin):
-    query = f"SELECT * FROM dk_previous WHERE vin = '{vin}'"
+# async def find_vin_ended_dcs(vin):
+#     query = f"SELECT * FROM dcs_ended WHERE vin = '{vin}'"
+#
+#     async with AsyncDatabase(**conf) as db:
+#         data = await db.fetch(query)
+#
+#     if data is None:
+#         return {}
+#
+#     data = list_detector_to_list(data)
+#
+#     return data
 
-    async with AsyncDatabase(**conf) as db:
-        data = await db.fetch(query)
 
-    if data is None:
-        return {}
-
-    data = list_detector_to_list(data)
-
-    return data
-
-
-async def create_vin_act_dk(vin_d, force_rewrite=False):
-    config.logger.debug(f'{vin_d["vin"]} SQL Insert...')
-    items_tuple = set_items_tuple_create_vin_record(vin_d, multi=False)
+async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
+    config.logger.debug(f'{dict_of_vin["vin"]} SQL Insert...')
+    items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
     query = get_insert_query(force_rewrite)
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
         if data is not None:
-            prev_arr = set_items_arr_for_prev_dks(vin_d)
+            previous_dc_list = set_items_arr_for_prev_dks(dict_of_vin)
             query = get_insert_dk_prev_query()
-            prev_data = await db.executemany(query, prev_arr)
+            await db.executemany(query, previous_dc_list)
             return True
         else:
             return None
 
 
-async def create_vins_act_dk(vins_l):
-    items_arr = []
-    prev_arr = []
-    for vin_d in vins_l:
-        items_tuple = set_items_tuple_create_vin_record(vin_d, multi=True)
-        items_arr.append(items_tuple)
-        prev_arr.extend(set_items_arr_for_prev_dks(vin_d))
+async def create_dc_for_vin_bulk(list_of_vins):
+    items = []
+    previous_dc_list = []
+    for dict_of_vin in list_of_vins:
+        items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=True)
+        items.append(items_tuple)
+        previous_dc_list.extend(set_items_arr_for_prev_dks(dict_of_vin))
     query = get_insert_query(False)
     async with AsyncDatabase(**conf) as db:
-        data = await db.executemany(query, items_arr)
+        data = await db.executemany(query, items)
         query = get_insert_dk_prev_query()
-        prev_data = await db.executemany(query, prev_arr)
+        await db.executemany(query, previous_dc_list)
         if data is not None:
             return True
         else:
             return None
 
 
-async def load_vins(fname: Path):
-    with open(fname, "r") as f:
+async def create_vins(vins):
+    async with AsyncDatabase(**conf) as db:
+        query = get_vins_add_query()
+        data = await db.executemany(
+            query,
+            set_items_tuple_create_vin_record(vins)
+        )
+        if data is not None:
+            return True
+        else:
+            return None
+
+
+async def load_vins(filename: Path):
+    with open(filename, "r") as f:
         vins = f.read().split('\n')
     items_arr = []
     for vin in vins:

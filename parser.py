@@ -16,9 +16,24 @@ warnings.filterwarnings("ignore")
 def get_proxies_from_url(url=f"http://api-external.tm.8525.ru/proxies?token=5jossnicxhn75lht7aimal7r2ocvg6o7"):
     r = requests.get(url, verify=False)
     if r.status_code == 200:
-        plist = r.json().get('results')
+        try:
+            plist = r.json().get('results')
+        except:
+            plist = []
     else:
-        plist = None
+        plist = []
+    return plist
+
+
+def get_vins_from_url(url='http://api-external.tm.8525.ru/vins?token=5jossnicxhn75lht7aimal7r2ocvg6o7'):
+    r = requests.get(url, verify=False)
+    if r.status_code == 200:
+        try:
+            plist = r.json().get('results')
+        except:
+            plist = []
+    else:
+        plist = []
     return plist
 
 
@@ -124,8 +139,8 @@ class VinDcCheck:
                     if not (vin.get('createdAt', None)):
                         force = True
                     vin = self.get_vin_code(vin['vin'], prx)
-                    asyncio.run(sql_adapter.create_vin_act_dk(vin[0], force))
-                    # sql_adapter.create_vin_act_dk(vin)
+                    asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
+                    # sql_adapter.create_dc_for_vin(vin)
                     self.results.append(vin[0])
                     break
                 except StopIteration:
