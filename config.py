@@ -14,7 +14,7 @@ DATABASE = {
 tries = 5
 proxies = []
 r_proxies = cycle(proxies)
-threads = 3
+threads = 20
 touched_at = 3
 
 logging.basicConfig(level=logging.INFO)

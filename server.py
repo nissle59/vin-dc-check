@@ -23,12 +23,12 @@ async def startup():
     await service.update_proxies()
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
-    await mdc(20, True)
+    await mdc(True)
 
 
 @app.get("/mFindDc")
-async def mdc(threads=3, use_proxy=True):
-    config.threads = threads
+async def mdc(use_proxy=True):
+    # config.threads = threads
     res = json.dumps(
         await service.multithreaded_find_dcs(use_proxy),
         ensure_ascii=False,
