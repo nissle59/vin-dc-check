@@ -64,7 +64,8 @@ def get_insert_dk_prev_query():
                     $1, 
                     $2, 
                     $3::date, 
-                    $4::date
+                    $4::date,
+                    $5::int4
                 ) ON CONFLICT DO NOTHING
             """
     return query
@@ -134,7 +135,8 @@ def set_items_arr_for_prev_dks(vin_d):
             prev_dk["dcNumber"],
             vin_d["vin"],
             convert_to_ts(prev_dk["dcDate"]),
-            convert_to_ts(prev_dk["dcExpirationDate"])
+            convert_to_ts(prev_dk["dcExpirationDate"]),
+            prev_dk['odometerValue']
         )
         prev_arr.append(prev_tuple)
     return prev_arr
