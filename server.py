@@ -26,7 +26,7 @@ async def startup():
     await mdc(True)
 
 
-@app.on_event("/updateVins")
+@app.get("/updateVins")
 async def updateVins():
     res = json.dumps(
         await service.update_vins(),
