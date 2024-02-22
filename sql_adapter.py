@@ -136,7 +136,7 @@ def set_items_arr_for_prev_dks(vin_d):
             vin_d["vin"],
             convert_to_ts(prev_dk["dcDate"]),
             convert_to_ts(prev_dk["dcExpirationDate"]),
-            prev_dk['odometerValue']
+            int(prev_dk['odometerValue'])
         )
         prev_arr.append(prev_tuple)
     return prev_arr
