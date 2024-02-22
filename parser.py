@@ -182,13 +182,13 @@ class VinDcCheck:
         dt_diff = (stop_dt - start_dt).total_seconds()
         if dt_diff > 60:
             dt_m, dt_s = divmod(dt_diff, 60)
-            dt_str = f'{arr_length} records: {dt_m} minutes {dt_s} seconds passed'
+            dt_str = f'{arr_length} records: {int(dt_m)} minutes {round(dt_s)} seconds passed'
         elif dt_diff > 3600:
             dt_m, dt_s = divmod(dt_diff, 60)
             dt_h, dt_m = divmod(dt_m, 60)
-            dt_str = f'{arr_length} records: {dt_h} hours {dt_m} minutes {dt_s} seconds passed'
+            dt_str = f'{arr_length} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
         else:
-            dt_str = f'{arr_length} records: {dt_diff} seconds passed'
+            dt_str = f'{arr_length} records: {round(dt_diff)} seconds passed'
         config.logger.info(dt_str)
 
 if __name__ == '__main__':
