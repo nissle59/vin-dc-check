@@ -159,8 +159,11 @@ class VinDcCheck:
         l_c = []
         for i in range(0, config.threads):
             config.logger.info(f'{i + 1} of {config.threads}')
-
-            l_c.append(vins[l_count * i:l_count * i + l_count])
+            min = l_count * i
+            max = min + l_count
+            if max > len(vins):
+                max = min + l_mod
+            l_c.append(vins[min:max])
 
         for i in range(0, config.threads):
             t_s.append(
