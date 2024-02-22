@@ -15,7 +15,7 @@ tries = 5
 proxies = []
 r_proxies = cycle(proxies)
 threads = 20
-touched_at = -1
+touched_at = 7
 
 logging.basicConfig(level=logging.INFO)
 
