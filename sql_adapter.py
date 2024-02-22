@@ -23,6 +23,123 @@ camel_pat = re.compile(r'([A-Z])')
 under_pat = re.compile(r'_([a-z])')
 
 
+def get_insert_query(force_rewrite):
+    query = f"""
+                INSERT INTO 
+                    dcs 
+                VALUES (
+                    $1,
+                    $2,
+                    $3::date,
+                    $4::date,
+                    $5::timestamp,
+                    $6::timestamp,
+                    $7::int4,
+                    $8,
+                    $9,
+                    $10,
+                    $11
+                ) ON CONFLICT (vin) DO 
+                UPDATE SET 
+                    dc_number=$1, 
+                    issue_date=$3::date, 
+                    expiry_date=$4::date, 
+                    touched_at=$5::timestamp,
+                    odometer_value=$7::int4,
+                    model=$8,
+                    brand=$9,
+                    operator_name=$10,
+                    operator_address=$11
+            """
+    if force_rewrite == True:
+        query += ",created_at=$6::timestamp"
+    return query
+
+
+def get_insert_dk_prev_query():
+    query = f"""
+                INSERT INTO 
+                    dk_previous 
+                VALUES (
+                    $1, 
+                    $2, 
+                    $3::date, 
+                    $4::date
+                ) ON CONFLICT DO NOTHING
+            """
+    return query
+
+
+def get_insert_proxy_query():
+    query = f'''
+                INSERT INTO 
+                    proxies 
+                VALUES (
+                    $1, 
+                    $2, 
+                    $3, 
+                    $4, 
+                    $5, 
+                    $6, 
+                    $7
+                ) ON CONFLICT (proxy_id) DO 
+                UPDATE SET 
+                    ip=$2, 
+                    username=$3, 
+                    "password"=$4, 
+                    "type"=$5, 
+                    enabled=$6, 
+                    port=$7
+            '''
+    return query
+
+
+def set_items_tuple_create_vin_record(vin_d, multi=False):
+    nowdt = del_tz(datetime.datetime.now())
+    if multi is True:
+        items_tuple = (
+            vin_d['dcNumber'],
+            vin_d['vin'],
+            convert_to_ts(vin_d["dcDate"]),
+            convert_to_ts(vin_d["dcExpirationDate"]),
+            nowdt,
+            nowdt,
+            vin_d['odometerValue'],
+            vin_d['model'],
+            vin_d['brand'],
+            vin_d['operatorName'],
+            vin_d['pointAddress']
+        )
+    else:
+        items_tuple = [
+            vin_d['dcNumber'],
+            vin_d['vin'],
+            convert_to_ts(vin_d["dcDate"]),
+            convert_to_ts(vin_d["dcExpirationDate"]),
+            nowdt,
+            nowdt,
+            vin_d['odometerValue'],
+            vin_d['model'],
+            vin_d['brand'],
+            vin_d['operatorName'],
+            vin_d['pointAddress']
+        ]
+    return items_tuple
+
+
+def set_items_arr_for_prev_dks(vin_d):
+    prev_arr = []
+    for prev_dk in vin_d["previousDcs"]:
+        prev_tuple = (
+            prev_dk["dcNumber"],
+            vin_d["vin"],
+            convert_to_ts(prev_dk["dcDate"]),
+            convert_to_ts(prev_dk["dcExpirationDate"])
+        )
+        prev_arr.append(prev_tuple)
+    return prev_arr
+
+
 def camel_to_underscore(name):
     return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
 
@@ -141,25 +258,14 @@ async def find_vin_prev_dk(vin):
 
 async def create_vin_act_dk(vin_d, force_rewrite=False):
     config.logger.debug(f'{vin_d["vin"]} SQL Insert...')
-    nowdt = del_tz(datetime.datetime.now())
-    dc_num = vin_d['dcNumber']
-    vin_code = vin_d['vin']
-    issue_date = convert_to_ts(vin_d["dcDate"])
-    expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
-    items_tuple = [dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt]
-    # query = f"INSERT INTO dcs VALUES {items_tuple} ON CONFLICT (vin) DO UPDATE SET dc_number='{dc_num}', issue_date='{issue_date}', expiry_date='{expiry_date}', touched_at=now()"
-    if force_rewrite:
-        query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp, created_at=$6::timestamp"
-    else:
-        query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp"
+    items_tuple = set_items_tuple_create_vin_record(vin_d, multi=False)
+    query = get_insert_query(force_rewrite)
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
         if data is not None:
-            for prev_dk in vin_d["previousDcs"]:
-                items_tuple = [prev_dk["dcNumber"], vin_d["vin"], convert_to_ts(prev_dk["dcDate"]),
-                               convert_to_ts(prev_dk["dcExpirationDate"])]
-                query = f"INSERT INTO dk_previous VALUES ($1, $2, $3::date, $4::date) ON CONFLICT DO NOTHING"
-                prev_data = await db.execute(query, items_tuple)
+            prev_arr = set_items_arr_for_prev_dks(vin_d)
+            query = get_insert_dk_prev_query()
+            prev_data = await db.executemany(query, prev_arr)
             return True
         else:
             return None
@@ -169,21 +275,13 @@ async def create_vins_act_dk(vins_l):
     items_arr = []
     prev_arr = []
     for vin_d in vins_l:
-        nowdt = del_tz(datetime.datetime.now())
-        dc_num = vin_d['dcNumber']
-        vin_code = vin_d['vin']
-        issue_date = convert_to_ts(vin_d["dcDate"])
-        expiry_date = convert_to_ts(vin_d["dcExpirationDate"])
-        items_tuple = (dc_num, vin_code, issue_date, expiry_date, nowdt, nowdt)
+        items_tuple = set_items_tuple_create_vin_record(vin_d, multi=True)
         items_arr.append(items_tuple)
-        for prev_dk in vin_d["previousDcs"]:
-            prev_tuple = (prev_dk["dcNumber"], vin_d["vin"], convert_to_ts(prev_dk["dcDate"]),
-                          convert_to_ts(prev_dk["dcExpirationDate"]))
-            prev_arr.append(prev_tuple)
-    query = f"INSERT INTO dcs VALUES ($1,$2,$3::date,$4::date,$5::timestamp,$6::timestamp) ON CONFLICT (vin) DO UPDATE SET dc_number=$1, issue_date=$3::date, expiry_date=$4::date, touched_at=$5::timestamp"
+        prev_arr.extend(set_items_arr_for_prev_dks(vin_d))
+    query = get_insert_query(False)
     async with AsyncDatabase(**conf) as db:
         data = await db.executemany(query, items_arr)
-        query = f"INSERT INTO dk_previous VALUES ($1, $2, $3::date, $4::date) ON CONFLICT DO NOTHING"
+        query = get_insert_dk_prev_query()
         prev_data = await db.executemany(query, prev_arr)
         if data is not None:
             return True
@@ -200,7 +298,13 @@ async def load_vins(fname: Path):
         if vin != '':
             items_tuple = (vin,)
             items_arr.append(items_tuple)
-    query = f"INSERT INTO dcs(vin) VALUES ($1) ON CONFLICT (vin) DO NOTHING"
+    query = f"""
+        INSERT INTO 
+            dcs(vin) 
+        VALUES (
+            $1
+        ) ON CONFLICT (vin) DO NOTHING
+    """
     async with AsyncDatabase(**conf) as db:
         data = await db.executemany(query, items_arr)
         if data is not None:
@@ -220,11 +324,19 @@ async def update_proxies(plist):
         pr_type = item['type']
         enabled = item['enabled']
         port = int(item["port"])
-        items_tuple = (proxy_id, ip, username, password, pr_type, enabled, port)
+        items_tuple = (
+            proxy_id,
+            ip,
+            username,
+            password,
+            pr_type,
+            enabled,
+            port
+        )
         values.append(items_tuple)
         count += 1
     async with AsyncDatabase(**conf) as db:
-        query = f'INSERT INTO proxies VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (proxy_id) DO UPDATE SET ip=$2, username=$3, "password"=$4, "type"=$5, enabled=$6, port=$7'
+        query = get_insert_proxy_query()
         data = await db.executemany(query, values)
     config.r_proxies = cycle(config.proxies)
     return {
