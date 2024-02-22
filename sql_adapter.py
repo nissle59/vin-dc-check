@@ -69,7 +69,7 @@ def get_insert_query(force_rewrite):
 def get_insert_dk_prev_query():
     query = f"""
                 INSERT INTO 
-                    dcs_ended 
+                    dk_previous
                 VALUES (
                     $1, 
                     $2, 
