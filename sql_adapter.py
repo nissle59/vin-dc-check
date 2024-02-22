@@ -66,7 +66,9 @@ def get_insert_dk_prev_query():
                     $3::date, 
                     $4::date,
                     $5::int4
-                ) ON CONFLICT DO NOTHING
+                ) ON CONFLICT (dc_number) DO 
+                UPDATE SET 
+                    odometer_value=$5::int4
             """
     return query
 
