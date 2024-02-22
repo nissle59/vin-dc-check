@@ -143,17 +143,18 @@ class VinDcCheck:
         t_s = []
         tc = config.threads
         l_count, l_mod = divmod(len(vins), tc)
-        l_mod = len(vins) % tc
-        if l_mod != 0:
-
-            l_mod = len(vins) % config.threads
-            if l_mod == 0:
-                tc = config.threads
-                l_count = len(vins) // tc
-
-            else:
-                tc = config.threads - 1
-                l_count = len(vins) // tc
+        l_count += 1
+        # l_mod = len(vins) % tc
+        # if l_mod != 0:
+        #
+        #     l_mod = len(vins) % config.threads
+        #     if l_mod == 0:
+        #         tc = config.threads
+        #         l_count = len(vins) // tc
+        #
+        #     else:
+        #         tc = config.threads - 1
+        #         l_count = len(vins) // tc
 
         l_c = []
         for i in range(0, config.threads):
