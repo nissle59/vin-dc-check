@@ -176,7 +176,10 @@ conf = config.DATABASE
 def list_detector(input_data):
     new_data = {}
     if isinstance(input_data, list):
-        data = [dict(record) for record in input_data][0]
+        try:
+            data = [dict(record) for record in input_data][0]
+        except:
+            data = {}
     else:
         data = dict(input_data)
     for key, value in data.items():
