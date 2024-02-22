@@ -23,7 +23,8 @@ async def startup():
     await service.update_proxies()
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
-    await mdc(True)
+    config.logger.info('Updating started')
+    mdc(True)
 
 
 @app.get("/updateVins")
