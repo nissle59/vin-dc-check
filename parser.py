@@ -221,7 +221,7 @@ class VinDcCheck:
     #     config.logger.info(dt_str)
 
     def get_captcha(self):
-        print('Getting captcha data')
+        # print('Getting captcha data')
         if self.proxy:
             try:
                 r = self.session.get(self.captch_req_url, verify=False, proxies=self.proxy)
@@ -231,11 +231,14 @@ class VinDcCheck:
         else:
             r = self.session.get(self.captch_req_url, verify=False)
         if r:
-            result = r.json()
-            # config.logger.info(result.get('token'))
-            res = self.resolve_captcha(result.get('base64jpg'))
-            # config.logger.info(js)
-            result.update({'code': res})
+            try:
+                result = r.json()
+                # config.logger.info(result.get('token'))
+                res = self.resolve_captcha(result.get('base64jpg'))
+                # config.logger.info(js)
+                result.update({'code': res})
+            except:
+                result = None
         else:
             result = None
         # config.logger.info(json.dumps(result, ensure_ascii=False, indent=2))
@@ -257,11 +260,12 @@ class VinDcCheck:
         if not self.captcha:
             self.captcha = self.get_captcha()
         if self.captcha:
-            c_token = self.captcha.get('token')
             try:
+                c_token = self.captcha.get('token')
                 c_code = int(self.captcha.get('code'))
             except:
                 c_code = 0
+                c_token = ''
             params = {
                 'vin': vin_code,
                 'checkType': 'diagnostic',
@@ -274,7 +278,7 @@ class VinDcCheck:
                     r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=self.proxy)
                 except requests.exceptions.SSLError as ssl_error:
                     self.proxy = next(config.r_proxies)
-                    config.logger.info(f'{self.proxy["http"].split("@")[1]} - SSL Error: {ssl_error}, change proxy')
+                    #config.logger.info(f'{self.proxy["http"].split("@")[1]} - SSL Error: {ssl_error}, change proxy')
                     return self.get_vin_code(vin_code)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
@@ -283,7 +287,7 @@ class VinDcCheck:
 
                 if res.get('code', 200) in ['201', 201]:
                     time.sleep(1)
-                    config.logger.info(f'{vin_code} Captcha error, retrying...')
+                    #config.logger.info(f'{vin_code} Captcha error, retrying...')
                     self.captcha = None
                     return self.get_vin_code(vin_code)
 
