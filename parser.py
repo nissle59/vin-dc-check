@@ -297,7 +297,7 @@ class VinDcCheck:
                 config.logger.info(f'[{c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
 
             except Exception as e:
-                config.logger.info(f'[{c_code}] {vin_code} - None')
+                config.logger.info(f'[{c_code}] {vin_code} - NO DIAGNOSTIC CARDS')
                 try:
                     if res.get('code', 200) in ['201', 201]:
                         pass
