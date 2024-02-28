@@ -90,7 +90,7 @@ def get_insert_query(force_rewrite):
 def get_update_vin_record_query():
     query = """
                 UPDATE dc_base.vins
-                SET model=$2, brand=$3, touched_at=$4, updated_at=$5
+                SET model=$2, brand=$3
                 WHERE vin=$1;
       
     """
@@ -334,8 +334,24 @@ async def get_vins_to_update():
     return data
 
 
+async def update_vin(dict_of_vin):
+    items_tuple = (
+        dict_of_vin["vin"],
+        dict_of_vin.get("model", ''),
+        dict_of_vin.get("brand", '')
+    )
+    query = get_update_vin_record_query()
+    async with AsyncDatabase(**conf) as db:
+        data = await db.execute(query, items_tuple)
+        if data is not None:
+            return True
+        else:
+            return False
+
+
 async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
     config.logger.debug(f'{dict_of_vin["vin"]} SQL Insert...')
+    update_vin(dict_of_vin)
     items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
     query = get_insert_query(force_rewrite)
     touch_vin_at(dict_of_vin["vin"])
