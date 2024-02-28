@@ -155,7 +155,7 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             convert_to_ts(dict_of_vin["dcDate"]),
             convert_to_ts(dict_of_vin["dcExpirationDate"]),
             int(dict_of_vin['odometerValue']),
-            dict_of_vin['operatorName'],
+            int(dict_of_vin['operatorName']),
             dt_now_timestamp,
             dt_now_timestamp
         )
@@ -166,7 +166,7 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             convert_to_ts(dict_of_vin["dcDate"]),
             convert_to_ts(dict_of_vin["dcExpirationDate"]),
             int(dict_of_vin['odometerValue']),
-            dict_of_vin['operatorName'],
+            int(dict_of_vin['operatorName']),
             dt_now_timestamp,
             dt_now_timestamp
         ]
