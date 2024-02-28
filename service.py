@@ -8,9 +8,10 @@ import sql_adapter
 
 async def multithreaded_find_dcs(use_proxy=True):
     vins = await sql_adapter.get_vins_to_update()
-    config.logger.info(vins)
-    v = parser.VinDcCheck()
-    v.multithreading_get_vins(vins, use_proxy)
+    # config.logger.info(vins)
+    # v = parser.VinDcCheck()
+    # v.multithreading_get_vins(vins, use_proxy)
+    parser.mulithreaded_processor(vins)
     # print(v.results)
     # result = None
     # if v.results:
