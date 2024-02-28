@@ -405,7 +405,7 @@ async def touch_vin_at(vin_number: str):
         SET touched_at=CURRENT_TIMESTAMP
         WHERE vin=$1;
         """
-        data = await db.executemany(
+        data = await db.execute(
             query,
             (vin_number,)
         )
@@ -422,7 +422,7 @@ async def update_vin_at(vin_number: str):
         SET updated_at=CURRENT_TIMESTAMP
         WHERE vin=$1;
         """
-        data = await db.executemany(
+        data = await db.execute(
             query,
             (vin_number,)
         )
