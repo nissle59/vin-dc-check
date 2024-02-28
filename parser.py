@@ -56,6 +56,7 @@ class VinDcCheck:
         self.api_key = 'e9e783d3e52abd6101fc807ab1109400'
         self.solver = Anticaptcha(token=self.api_key)
         self.proxy = proxy
+        self.captcha_iter = 0
         self.captcha = None
         if proxy is not None:
             print(proxy)
@@ -237,6 +238,7 @@ class VinDcCheck:
                 res = self.resolve_captcha(result.get('base64jpg'))
                 # config.logger.info(js)
                 result.update({'code': res})
+                self.captcha_iter += 1
             except:
                 result = None
         else:
@@ -294,10 +296,10 @@ class VinDcCheck:
                 result = res.get('RequestResult').get('diagnosticCards')
                 for r in result:
                     r['vin'] = vin_code
-                config.logger.info(f'[{c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
+                config.logger.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
 
             except Exception as e:
-                config.logger.info(f'[{c_code}] {vin_code} - NO DIAGNOSTIC CARDS')
+                config.logger.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS')
                 try:
                     if res.get('code', 200) in ['201', 201]:
                         pass
