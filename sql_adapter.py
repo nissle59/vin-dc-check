@@ -26,7 +26,7 @@ under_pat = re.compile(r'_([a-z])')
 def get_vins_add_query():
     query = f"""
                 INSERT INTO 
-                    vin 
+                    dc_base.vins 
                 VALUES ($1) 
                 ON CONFLICT DO NOTHING
             """
@@ -34,59 +34,90 @@ def get_vins_add_query():
 
 
 def get_insert_query(force_rewrite):
+    # query = f"""
+    #             INSERT INTO
+    #                 dcs
+    #             VALUES (
+    #                 $1,
+    #                 $2,
+    #                 $3::date,
+    #                 $4::date,
+    #                 $5::timestamp,
+    #                 $6::timestamp,
+    #                 $7::int4,
+    #                 $8,
+    #                 $9,
+    #                 $10,
+    #                 $11
+    #             ) ON CONFLICT (dc_number) DO
+    #             UPDATE SET
+    #                 vin=$2,
+    #                 issue_date=$3::date,
+    #                 expiry_date=$4::date,
+    #                 touched_at=$5::timestamp,
+    #                 odometer_value=$7::int4,
+    #                 model=$8,
+    #                 brand=$9,
+    #                 operator_name=$10,
+    #                 operator_address=$11
+    #         """
     query = f"""
-                INSERT INTO 
-                    dcs 
-                VALUES (
-                    $1,
-                    $2,
-                    $3::date,
-                    $4::date,
-                    $5::timestamp,
-                    $6::timestamp,
-                    $7::int4,
-                    $8,
-                    $9,
-                    $10,
-                    $11
-                ) ON CONFLICT (dc_number) DO 
-                UPDATE SET 
-                    vin=$2, 
-                    issue_date=$3::date, 
-                    expiry_date=$4::date, 
-                    touched_at=$5::timestamp,
-                    odometer_value=$7::int4,
-                    model=$8,
-                    brand=$9,
-                    operator_name=$10,
-                    operator_address=$11
-            """
+                    INSERT INTO 
+                        dc_base.diagnostic_cards 
+                    VALUES (
+                        $1,
+                        $2,
+                        $3::date,
+                        $4::date,
+                        $5::int4,
+                        $6::int4,
+                        $7::timestamp,
+                        $8::timestamp
+                    ) ON CONFLICT (card_number) DO 
+                    UPDATE SET 
+                        vin=$2, 
+                        issue_date=$3::date, 
+                        expiry_date=$4::date, 
+                        odometer_value=$5::int4,
+                        operator_number=$6::int4,
+                        updated_at=$7::timestamp
+                """
     if force_rewrite:
-        query += ",created_at=$6::timestamp"
+        query += ",created_at=$8::timestamp"
     return query
 
 
-def get_insert_dk_prev_query():
-    query = f"""
-                INSERT INTO 
-                    dk_previous
-                VALUES (
-                    $1, 
-                    $2, 
-                    $3::date, 
-                    $4::date,
-                    $5::int4
-                ) ON CONFLICT (dc_number) DO 
-                UPDATE SET 
-                    odometer_value=$5::int4
-            """
+def get_update_vin_record_query():
+    query = """
+                UPDATE dc_base.vins
+                SET model=$2, brand=$3, touched_at=$4, updated_at=$5
+                WHERE vin=$1;
+      
+    """
     return query
+
+
+# def get_insert_dk_prev_query():
+#     query = f"""
+#                 INSERT INTO
+#                     dk_previous
+#                 VALUES (
+#                     $1,
+#                     $2,
+#                     $3::date,
+#                     $4::date,
+#                     $5::int4
+#                 ) ON CONFLICT (dc_number) DO
+#                 UPDATE SET
+#                     odometer_value=$5::int4
+#             """
+#     return query
 
 
 def get_insert_proxy_query():
     query = f'''
                 INSERT INTO 
-                    proxies 
+                    dc_base.proxies 
                 VALUES (
                     $1, 
                     $2, 
@@ -123,13 +154,10 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             dict_of_vin['vin'],
             convert_to_ts(dict_of_vin["dcDate"]),
             convert_to_ts(dict_of_vin["dcExpirationDate"]),
-            dt_now_timestamp,
-            dt_now_timestamp,
             int(dict_of_vin['odometerValue']),
-            dict_of_vin['model'],
-            dict_of_vin['brand'],
             dict_of_vin['operatorName'],
-            dict_of_vin['pointAddress']
+            dt_now_timestamp,
+            dt_now_timestamp
         )
     else:
         items_tuple = [
@@ -137,26 +165,31 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             dict_of_vin['vin'],
             convert_to_ts(dict_of_vin["dcDate"]),
             convert_to_ts(dict_of_vin["dcExpirationDate"]),
-            dt_now_timestamp,
-            dt_now_timestamp,
             int(dict_of_vin['odometerValue']),
-            dict_of_vin['model'],
-            dict_of_vin['brand'],
             dict_of_vin['operatorName'],
-            dict_of_vin['pointAddress']
+            dt_now_timestamp,
+            dt_now_timestamp
         ]
     return items_tuple
 
 
 def set_items_arr_for_prev_dks(dict_of_vin):
     items = []
+    dt_now_timestamp = del_tz(datetime.datetime.now())
     for dc in dict_of_vin["previousDcs"]:
+        if len(dc["dcNumber"]) == 15:
+            op_num = int(dc["dcNumber"][:5])
+        else:
+            op_num = 0
         item_tuple = (
             dc["dcNumber"],
             dict_of_vin["vin"],
             convert_to_ts(dc["dcDate"]),
             convert_to_ts(dc["dcExpirationDate"]),
-            int(dc['odometerValue'])
+            int(dc['odometerValue']),
+            op_num,
+            dt_now_timestamp,
+            dt_now_timestamp
         )
         items.append(item_tuple)
     return items
@@ -206,7 +239,7 @@ def list_detector_to_list(input_data):
 
 
 async def get_setting(setting_name: str):
-    query = f"SELECT value FROM settings WHERE setting_name = '{setting_name}'"
+    query = f"SELECT value FROM dc_base.settings WHERE setting_name = '{setting_name}'"
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
@@ -221,11 +254,11 @@ async def get_setting(setting_name: str):
 
 async def get_active_proxies(proxy_type: str):
     if proxy_type == "HTTPS":
-        view_name = 'https_active_proxies'
+        view_name = 'dc_base.https_active_proxies'
     elif proxy_type == 'SOCKS5':
-        view_name = 'socks_active_proxies'
+        view_name = 'dc_base.socks_active_proxies'
     else:
-        view_name = 'active_proxies'
+        view_name = 'dc_base.active_proxies'
 
     query = f"SELECT * FROM {view_name}"
     async with AsyncDatabase(**conf) as db:
@@ -240,7 +273,7 @@ async def get_active_proxies(proxy_type: str):
 
 
 async def find_vin_actual_dc(vin):
-    query = f"SELECT * FROM dcs_actual WHERE vin = '{vin}'"
+    query = f"SELECT * FROM dc_base.dcs_actual WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
     async with AsyncDatabase(**conf) as db:
@@ -255,7 +288,7 @@ async def find_vin_actual_dc(vin):
 
 
 async def find_vin_canceled_dk(vin):
-    query = f"SELECT * FROM dcs_canceled WHERE vin = '{vin}'"
+    query = f"SELECT * FROM dc_base.dcs_canceled WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
     async with AsyncDatabase(**conf) as db:
@@ -270,7 +303,7 @@ async def find_vin_canceled_dk(vin):
 
 
 async def find_vin_ended_dcs(vin):
-    query = f"SELECT * FROM dcs_ended WHERE vin = '{vin}'"
+    query = f"SELECT * FROM dc_base.dcs_ended WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
     async with AsyncDatabase(**conf) as db:
@@ -286,7 +319,7 @@ async def find_vin_ended_dcs(vin):
 
 async def get_vins_to_update():
     # touched_at = config.touched_at
-    query = f"SELECT * FROM vins_to_update"
+    query = f"SELECT * FROM dc_base.vins_to_update"
     # query = f"select vin, created_at from dcs
     # where dc_number is null or expiry_date < now() or created_at is null or (now()-touched_at) >= '{touched_at} days'"
 
@@ -301,33 +334,21 @@ async def get_vins_to_update():
     return data
 
 
-# async def find_vin_ended_dcs(vin):
-#     query = f"SELECT * FROM dcs_ended WHERE vin = '{vin}'"
-#
-#     async with AsyncDatabase(**conf) as db:
-#         data = await db.fetch(query)
-#
-#     if data is None:
-#         return {}
-#
-#     data = list_detector_to_list(data)
-#
-#     return data
-
-
 async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
     config.logger.debug(f'{dict_of_vin["vin"]} SQL Insert...')
     items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
     query = get_insert_query(force_rewrite)
+    touch_vin_at(dict_of_vin["vin"])
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
         if data is not None:
             previous_dc_list = set_items_arr_for_prev_dks(dict_of_vin)
-            query = get_insert_dk_prev_query()
+            query = get_insert_query(False)
             await db.executemany(query, previous_dc_list)
+            update_vin_at(dict_of_vin["vin"])
             return True
         else:
-            return None
+            return False
 
 
 async def create_dc_for_vin_bulk(list_of_vins):
@@ -340,12 +361,12 @@ async def create_dc_for_vin_bulk(list_of_vins):
     query = get_insert_query(False)
     async with AsyncDatabase(**conf) as db:
         data = await db.executemany(query, items)
-        query = get_insert_dk_prev_query()
+        query = get_insert_query(False)
         await db.executemany(query, previous_dc_list)
         if data is not None:
             return True
         else:
-            return None
+            return False
 
 
 async def create_vins(vins):
@@ -358,7 +379,41 @@ async def create_vins(vins):
         if data is not None:
             return True
         else:
-            return None
+            return False
+
+
+async def touch_vin_at(vin_number: str):
+    async with AsyncDatabase(**conf) as db:
+        query = f"""
+        UPDATE dc_base.vins
+        SET touched_at=CURRENT_TIMESTAMP
+        WHERE vin=$1;
+        """
+        data = await db.executemany(
+            query,
+            (vin_number,)
+        )
+        if data is not None:
+            return True
+        else:
+            return False
+
+
+async def update_vin_at(vin_number: str):
+    async with AsyncDatabase(**conf) as db:
+        query = f"""
+        UPDATE dc_base.vins
+        SET updated_at=CURRENT_TIMESTAMP
+        WHERE vin=$1;
+        """
+        data = await db.executemany(
+            query,
+            (vin_number,)
+        )
+        if data is not None:
+            return True
+        else:
+            return False
 
 
 async def load_vins(filename: Path):
@@ -372,7 +427,7 @@ async def load_vins(filename: Path):
             items_arr.append(items_tuple)
     query = f"""
         INSERT INTO 
-            dcs(vin) 
+            dc_base.vins(vin) 
         VALUES (
             $1
         ) ON CONFLICT (vin) DO NOTHING
@@ -382,7 +437,7 @@ async def load_vins(filename: Path):
         if data is not None:
             return True
         else:
-            return None
+            return False
 
 
 async def update_proxies(plist):
