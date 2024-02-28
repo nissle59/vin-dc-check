@@ -239,7 +239,7 @@ def process_thread(vins: list):
             try:
                 force = False
                 if v.proxy:
-                    v.proxy = next(config.r_proxies)
+                    # v.proxy = next(config.r_proxies)
                     config.logger.debug(f'Trying proxy {v.proxy["http"]}')
                 if not (vin.get('createdAt', None)):
                     force = True
