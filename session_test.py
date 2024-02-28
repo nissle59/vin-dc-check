@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import random
 import threading
@@ -9,7 +8,6 @@ from itertools import cycle
 import requests
 
 import config
-import sql_adapter
 from anticaptcha import Anticaptcha
 
 warnings.filterwarnings("ignore")
@@ -227,7 +225,7 @@ class VinDcCheck:
 
 
 def process_thread(vins: list):
-    v = VinDcCheck(next(r_proxies))
+    v = VinDcCheck(next(config.r_proxies))
     # v.get_vin_code(vins[0])
     # for vin in vins:
     #     v.get_vin_code(vin)
@@ -242,14 +240,14 @@ def process_thread(vins: list):
                 force = False
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
-                    config.logger.debug(f'Trying proxy {prx["http"]}')
+                    config.logger.debug(f'Trying proxy {v.proxy["http"]}')
                 if not (vin.get('createdAt', None)):
                     force = True
                 # vin = v.get_vin_code(vin['vin'])
                 vin = v.get_vin_code(vin['vin'])
                 t = 0.1 + (random.randint(0, 100) / 200)
                 time.sleep(round(t, 2))
-                asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
+                # asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
                 # sql_adapter.create_dc_for_vin(vin)
                 # self.results.append(vin[0])
                 break
@@ -413,9 +411,10 @@ if __name__ == '__main__':
         'Z9G4389UDN0000273'
     ]
 
+    vins = [{'vin': vin, 'createdAt': None} for vin in vins]
     pxs = []
-    proxies = get_proxies_from_url()
-    for proxy in proxies:
+    config.proxies = get_proxies_from_url()
+    for proxy in config.proxies:
         # print(proxy)
         px = f'{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{proxy["port"]}'
         d = {
@@ -425,8 +424,8 @@ if __name__ == '__main__':
         if proxy['enabled'] == 1:
             if proxy['type'] == 'HTTPS':
                 pxs.append(d)
-    r_proxies = cycle(pxs)
+    config.r_proxies = cycle(pxs)
     for i in range(random.randint(0, len(config.proxies))):
-        next(r_proxies)
+        next(config.r_proxies)
 
     process_thread(vins)

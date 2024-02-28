@@ -307,13 +307,19 @@ class VinDcCheck:
                             f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                     result = None
                     print(f'{vin_code} - Failed')
-                except:
+                except Exception as e:
+                    config.logger.error(e)
                     result = None
             return result
 
 
 def process_thread(vins: list):
-    v = VinDcCheck(next(config.r_proxies))
+    try:
+        prx = next(config.r_proxies)
+    except:
+        config.r_proxies = cycle(config.proxies)
+        prx = next(config.r_proxies)
+    v = VinDcCheck(prx)
     # v.get_vin_code(vins[0])
     # for vin in vins:
     #     v.get_vin_code(vin)
@@ -328,7 +334,7 @@ def process_thread(vins: list):
                 force = False
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
-                    config.logger.debug(f'Trying proxy {prx["http"]}')
+                    config.logger.debug(f'Trying proxy {v.proxy["http"]}')
                 if not (vin.get('createdAt', None)):
                     force = True
                 # vin = v.get_vin_code(vin['vin'])
@@ -351,7 +357,7 @@ def process_thread(vins: list):
                 c += 1
 
 
-def mulithreaded_processor(vins):
+def mulithreaded_processor(vins: list):
     start_dt = datetime.datetime.now()
     length_of_vins_list = len(vins)
     # self.results = []
