@@ -345,8 +345,11 @@ def process_thread(vins: list):
                 asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
                 vin = v.get_vin_code(vin['vin'])
                 t = 0.1 + (random.randint(0, 100) / 200)
-                time.sleep(round(t, 2))
-                asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
+                # time.sleep(round(t, 2))
+                try:
+                    asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
+                except:
+                    pass
                 # sql_adapter.create_dc_for_vin(vin)
                 # self.results.append(vin[0])
                 break
@@ -356,7 +359,7 @@ def process_thread(vins: list):
                     v.proxy = next(config.r_proxies)
                 c += 1
             except Exception as e:
-                config.logger.info(e)
+                #config.logger.info(e)
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
                 c += 1
