@@ -73,6 +73,7 @@ class VinDcCheck:
 
     def get_vin_code(self, vin_code, proxy=None):
         config.logger.debug(f'{vin_code} - Start')
+        asyncio.run(sql_adapter.touch_vin_at(vin_code))
         captcha = self.get_captcha(proxy)
         if captcha:
             c_token = captcha.get('token')

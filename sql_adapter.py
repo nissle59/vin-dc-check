@@ -354,7 +354,7 @@ async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
     await update_vin(dict_of_vin)
     items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
     query = get_insert_query(force_rewrite)
-    await touch_vin_at(dict_of_vin["vin"])
+    # await touch_vin_at(dict_of_vin["vin"])
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
         if data is not None:
