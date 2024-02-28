@@ -274,7 +274,7 @@ class VinDcCheck:
                     r = self.session.post(self.dc_check_url, data=params, verify=False, proxies=self.proxy)
                 except requests.exceptions.SSLError as ssl_error:
                     self.proxy = next(config.r_proxies)
-                    print(f'{self.proxy["http"].split("@")[1]} - SSL Error: {ssl_error}, change proxy')
+                    config.logger.info(f'{self.proxy["http"].split("@")[1]} - SSL Error: {ssl_error}, change proxy')
                     return self.get_vin_code(vin_code)
             else:
                 r = self.session.post(self.dc_check_url, data=params, verify=False)
@@ -283,22 +283,22 @@ class VinDcCheck:
 
                 if res.get('code', 200) in ['201', 201]:
                     time.sleep(1)
-                    print(f'{vin_code} Captcha error, retrying...')
+                    config.logger.info(f'{vin_code} Captcha error, retrying...')
                     self.captcha = None
                     return self.get_vin_code(vin_code)
 
                 result = res.get('RequestResult').get('diagnosticCards')
                 for r in result:
                     r['vin'] = vin_code
-                print(f'[{c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
+                config.logger.info(f'[{c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
 
             except Exception as e:
-                print(f'[{c_code}] {vin_code} - None')
+                config.logger.info(f'[{c_code}] {vin_code} - None')
                 try:
                     if res.get('code', 200) in ['201', 201]:
                         pass
                     else:
-                        print(e)
+                        # print(e)
                         # if RequestResult.status in ['NO_DATA','ERROR']: need catcher
                         with open(f'responses/{vin_code}.txt', 'w') as f:
                             ex = ''
@@ -306,9 +306,9 @@ class VinDcCheck:
                                 ex += arg + '\n'
                             f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                     result = None
-                    print(f'{vin_code} - Failed')
+                    #print(f'{vin_code} - Failed')
                 except Exception as e:
-                    config.logger.error(e)
+                    config.logger.error(f'{vin_code} - Failed')
                     result = None
             return result
 
@@ -338,6 +338,7 @@ def process_thread(vins: list):
                 if not (vin.get('createdAt', None)):
                     force = True
                 # vin = v.get_vin_code(vin['vin'])
+                asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
                 vin = v.get_vin_code(vin['vin'])
                 t = 0.1 + (random.randint(0, 100) / 200)
                 time.sleep(round(t, 2))
