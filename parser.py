@@ -349,6 +349,7 @@ def process_thread(vins: list):
                 t = 0.1 + (random.randint(0, 100) / 200)
                 # time.sleep(round(t, 2))
                 try:
+                    print(vin)
                     asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
                 except:
                     pass
