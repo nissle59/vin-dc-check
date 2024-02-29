@@ -58,8 +58,8 @@ class VinDcCheck:
         self.proxy = proxy
         self.captcha_iter = 0
         self.captcha = None
-        if proxy is not None:
-            print(proxy)
+        # if proxy is not None:
+        #     print(proxy)
 
     # def get_captcha(self, proxy=None):
     #     if proxy:
@@ -292,8 +292,13 @@ class VinDcCheck:
                     #config.logger.info(f'{vin_code} Captcha error, retrying...')
                     self.captcha = None
                     return self.get_vin_code(vin_code)
-
+                res_status = res.get('RequestResult', {'status': 'ERROR'}).get('status', 'ERROR')
+                if res_status in ['NO_DATA', 'ERROR']:
+                    result = []
+                    config.logger.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS')
+                    return result
                 result = res.get('RequestResult').get('diagnosticCards')
+
                 for r in result:
                     r['vin'] = vin_code
                 config.logger.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - {str(result[0]["dcNumber"])}')
@@ -371,45 +376,48 @@ def process_thread(vins: list):
 def mulithreaded_processor(vins: list):
     start_dt = datetime.datetime.now()
     length_of_vins_list = len(vins)
-    # self.results = []
-    array_of_threads = []
-    threads_count = config.threads
-    vins_in_thread, vins_in_last_thread = divmod(length_of_vins_list, threads_count)
-    vins_in_thread += 1
+    if length_of_vins_list > 0:
+        # self.results = []
+        array_of_threads = []
+        threads_count = config.threads
+        vins_in_thread, vins_in_last_thread = divmod(length_of_vins_list, threads_count)
+        vins_in_thread += 1
 
-    vins_lists = []
-    for i in range(0, threads_count):
-        config.logger.info(f'{i + 1} of {config.threads}')
-        slice_low = vins_in_thread * i
-        slice_high = slice_low + vins_in_thread
-        if slice_high > len(vins):
-            slice_high = slice_low + vins_in_last_thread
-        vins_lists.append(vins[slice_low:slice_high])
+        vins_lists = []
+        for i in range(0, threads_count):
+            config.logger.info(f'{i + 1} of {config.threads}')
+            slice_low = vins_in_thread * i
+            slice_high = slice_low + vins_in_thread
+            if slice_high > len(vins):
+                slice_high = slice_low + vins_in_last_thread
+            vins_lists.append(vins[slice_low:slice_high])
 
-    for i in range(0, threads_count):
-        array_of_threads.append(
-            threading.Thread(target=process_thread, args=(vins_lists[i],), daemon=True))
-    for thread in array_of_threads:
-        thread.start()
-        config.logger.info(
-            f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
+        for i in range(0, threads_count):
+            array_of_threads.append(
+                threading.Thread(target=process_thread, args=(vins_lists[i],), daemon=True))
+        for thread in array_of_threads:
+            thread.start()
+            config.logger.info(
+                f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
 
-    for thread in array_of_threads:
-        thread.join()
-        config.logger.info(
-            f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
-    stop_dt = datetime.datetime.now()
-    dt_diff = (stop_dt - start_dt).total_seconds()
-    if dt_diff > 60:
-        dt_m, dt_s = divmod(dt_diff, 60)
-        dt_str = f'{length_of_vins_list} records: {int(dt_m)} minutes {round(dt_s)} seconds passed'
-    elif dt_diff > 3600:
-        dt_m, dt_s = divmod(dt_diff, 60)
-        dt_h, dt_m = divmod(dt_m, 60)
-        dt_str = f'{length_of_vins_list} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
+        for thread in array_of_threads:
+            thread.join()
+            config.logger.info(
+                f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
+        stop_dt = datetime.datetime.now()
+        dt_diff = (stop_dt - start_dt).total_seconds()
+        if dt_diff > 60:
+            dt_m, dt_s = divmod(dt_diff, 60)
+            dt_str = f'{length_of_vins_list} records: {int(dt_m)} minutes {round(dt_s)} seconds passed'
+        elif dt_diff > 3600:
+            dt_m, dt_s = divmod(dt_diff, 60)
+            dt_h, dt_m = divmod(dt_m, 60)
+            dt_str = f'{length_of_vins_list} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
+        else:
+            dt_str = f'{length_of_vins_list} records: {round(dt_diff)} seconds passed'
+        config.logger.info(dt_str)
     else:
-        dt_str = f'{length_of_vins_list} records: {round(dt_diff)} seconds passed'
-    config.logger.info(dt_str)
+        config.logger.info(f'VINs list is empty. All VINs are up to date.')
 
 if __name__ == '__main__':
     pass
