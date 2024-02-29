@@ -33,7 +33,8 @@ async def find_dc(vin_code, noproxy):
             try:
                 prx = next(config.r_proxies)
                 config.logger.info(f'Trying proxy {prx["http"]}')
-                vin = v.get_vin_code(vin_code, prx)
+                v.proxy = prx
+                vin = v.get_vin_code(vin_code)
                 break
             except StopIteration:
                 config.r_proxies = cycle(config.proxies)
