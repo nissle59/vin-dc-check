@@ -1,7 +1,7 @@
 import json
 import random
 
-from fastapi import FastAPI, responses
+from fastapi import FastAPI, responses, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
@@ -31,6 +31,36 @@ async def startup():
 async def updateVins():
     res = json.dumps(
         await service.update_vins(),
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )
+
+
+@app.get("/bDc")
+async def bdc(vin, background_tasks: BackgroundTasks):
+    background_tasks.add_task(
+        service.find_dc, vin, False
+    )
+    res = json.dumps(
+        {"status": "success"},
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
