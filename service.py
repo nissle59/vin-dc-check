@@ -1,3 +1,4 @@
+import random
 from itertools import cycle
 from pathlib import Path
 
@@ -23,44 +24,83 @@ async def multithreaded_find_dcs(use_proxy=True):
 
 
 async def find_dc(vin_code, noproxy):
-    v = parser.VinDcCheck()
-    c = 0
+    try:
+        prx = next(config.r_proxies)
+    except:
+        config.r_proxies = cycle(config.proxies)
+        prx = next(config.r_proxies)
+    v = parser.VinDcCheck(prx)
+    # v = parser.VinDcCheck()
+    # c = 0
     vin = None
     if noproxy:
         vin = v.get_vin_code(vin_code)
     else:
+        c = 0
+        prx = None
         while c <= config.tries:
             try:
-                prx = next(config.r_proxies)
-                config.logger.info(f'Trying proxy {prx["http"]}')
-                v.proxy = prx
+                force = False
+                if v.proxy:
+                    # v.proxy = next(config.r_proxies)
+                    config.logger.debug(f'Trying proxy {v.proxy["http"]}')
+                # if not (vin.get('createdAt', None)):
+                #     force = True
+                # vin = v.get_vin_code(vin['vin'])
+                await sql_adapter.touch_vin_at(vin_code)
                 vin = v.get_vin_code(vin_code)
+                t = 0.1 + (random.randint(0, 100) / 200)
+                # time.sleep(round(t, 2))
+                try:
+                    print(vin)
+                    await sql_adapter.create_dc_for_vin(vin[0], force)
+                except:
+                    pass
+                # sql_adapter.create_dc_for_vin(vin)
+                # self.results.append(vin[0])
                 break
             except StopIteration:
-                config.r_proxies = cycle(config.proxies)
-                prx = next(config.r_proxies)
+                if v.proxy:
+                    config.r_proxies = cycle(config.proxies)
+                    v.proxy = next(config.r_proxies)
+                c += 1
             except Exception as e:
-                config.logger.info(e)
-                prx = next(config.r_proxies)
-
-    result = []
-    if vin:
-        if len(vin) == 1:
-            vin = vin[0]
-            resp = await sql_adapter.create_dc_for_vin(vin)
-            result.append(await sql_adapter.find_vin_actual_dc(vin_code))
-            return result[0]
-        elif len(vin) > 1:
-            for item in vin:
-                resp = await sql_adapter.create_dc_for_vin(item)
-                if resp:
-                    result.append(await sql_adapter.find_vin_actual_dc(vin_code))
-            return result
-        else:
-            return None
-    else:
-        config.logger.info(f'Cant parse vin_code {vin_code}')
-        return None
+                # config.logger.info(e)
+                if v.proxy:
+                    v.proxy = next(config.r_proxies)
+                c += 1
+    #     while c <= config.tries:
+    #         try:
+    #             prx = next(config.r_proxies)
+    #             config.logger.info(f'Trying proxy {prx["http"]}')
+    #             v.proxy = prx
+    #             vin = v.get_vin_code(vin_code)
+    #             break
+    #         except StopIteration:
+    #             config.r_proxies = cycle(config.proxies)
+    #             prx = next(config.r_proxies)
+    #         except Exception as e:
+    #             config.logger.info(e)
+    #             prx = next(config.r_proxies)
+    #
+    # result = []
+    # if vin:
+    #     if len(vin) == 1:
+    #         vin = vin[0]
+    #         resp = await sql_adapter.create_dc_for_vin(vin)
+    #         result.append(await sql_adapter.find_vin_actual_dc(vin_code))
+    #         return result[0]
+    #     elif len(vin) > 1:
+    #         for item in vin:
+    #             resp = await sql_adapter.create_dc_for_vin(item)
+    #             if resp:
+    #                 result.append(await sql_adapter.find_vin_actual_dc(vin_code))
+    #         return result
+    #     else:
+    #         return None
+    # else:
+    #     config.logger.info(f'Cant parse vin_code {vin_code}')
+    #     return None
 
 
 async def dc(vin_code):
