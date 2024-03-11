@@ -84,10 +84,13 @@ async def bdc(vin, background_tasks: BackgroundTasks):
         )
 
 @app.get("/mFindDc")
-async def mdc(use_proxy=True):
+async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
     # config.threads = threads
+    background_tasks.add_task(
+        service.multithreaded_find_dcs, use_proxy
+    )
     res = json.dumps(
-        await service.multithreaded_find_dcs(use_proxy),
+        {"status": "success"},
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
