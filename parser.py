@@ -306,8 +306,8 @@ class VinDcCheck:
             except Exception as e:
                 config.logger.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS')
                 try:
-                    if res.get('code', 200) in ['201', 201]:
-                        print(res)
+                    if r.status_code('code', 200) in ['201', 201]:
+                        print(r.content)
                     else:
                         # print(e)
                         # if RequestResult.status in ['NO_DATA','ERROR']: need catcher
