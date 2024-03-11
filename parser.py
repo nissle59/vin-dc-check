@@ -384,29 +384,33 @@ def mulithreaded_processor(vins: list):
         array_of_threads = []
         threads_count = config.threads
         vins_in_thread, vins_in_last_thread = divmod(length_of_vins_list, threads_count)
-        vins_in_thread += 1
+        # vins_in_thread += 1
 
         vins_lists = []
-        for i in range(0, threads_count):
-            config.logger.info(f'{i + 1} of {config.threads}')
-            slice_low = vins_in_thread * i
-            slice_high = slice_low + vins_in_thread
-            if slice_high > len(vins):
-                slice_high = slice_low + vins_in_last_thread
-            vins_lists.append(vins[slice_low:slice_high])
+        if vins_in_thread > 0:
+            for i in range(0, threads_count + 1):
+                config.logger.info(f'{i + 1} of {config.threads}')
+                slice_low = vins_in_thread * i
+                slice_high = slice_low + vins_in_thread
+                if slice_high > len(vins):
+                    slice_high = slice_low + vins_in_last_thread
+                vins_lists.append(vins[slice_low:slice_high])
 
-        for i in range(0, threads_count):
-            array_of_threads.append(
-                threading.Thread(target=process_thread, args=(vins_lists[i],), daemon=True))
-        for thread in array_of_threads:
-            thread.start()
-            config.logger.info(
-                f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
+            for i in range(0, threads_count + 1):
+                array_of_threads.append(
+                    threading.Thread(target=process_thread, args=(vins_lists[i],), daemon=True))
+            for thread in array_of_threads:
+                thread.start()
+                config.logger.info(
+                    f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
 
-        for thread in array_of_threads:
-            thread.join()
-            config.logger.info(
-                f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
+            for thread in array_of_threads:
+                thread.join()
+                config.logger.info(
+                    f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
+        else:
+            config.logger.info(f'Started parsing of {length_of_vins_list} vin in 1 thread...')
+            process_thread(vins)
         stop_dt = datetime.datetime.now()
         dt_diff = (stop_dt - start_dt).total_seconds()
         if dt_diff > 60:
