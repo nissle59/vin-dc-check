@@ -410,7 +410,9 @@ def mulithreaded_processor(vins: list):
                     f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins')
         else:
             config.logger.info(f'Started parsing of {length_of_vins_list} vin in 1 thread...')
-            process_thread(vins)
+            t1 = threading.Thread(target=process_thread, args=(vins,), daemon=True)
+            t1.start()
+            t1.join()
         stop_dt = datetime.datetime.now()
         dt_diff = (stop_dt - start_dt).total_seconds()
         if dt_diff > 60:
