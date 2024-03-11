@@ -410,8 +410,10 @@ async def touch_vin_at(vin_number: str):
             (vin_number,)
         )
         if data is not None:
+            config.logger.debug(f'{vin_number} touch updated')
             return True
         else:
+            config.logger.error(f'{vin_number} touch NOT updated')
             return False
 
 
@@ -427,8 +429,10 @@ async def update_vin_at(vin_number: str):
             (vin_number,)
         )
         if data is not None:
+            config.logger.debug(f'{vin_number} UPD updated')
             return True
         else:
+            config.logger.error(f'{vin_number} UPD NOT updated')
             return False
 
 
