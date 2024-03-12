@@ -403,11 +403,10 @@ async def touch_vin_at(vin_number: str):
         query = f"""
         UPDATE dc_base.vins
         SET touched_at=CURRENT_TIMESTAMP
-        WHERE vin=$1;
+        WHERE vin='{vin_number}';
         """
-        data = await db.execute(
-            query,
-            (vin_number,)
+        data = await db.fetch(
+            query
         )
         if data is not None:
             config.logger.debug(f'{vin_number} touch updated')

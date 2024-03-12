@@ -52,7 +52,7 @@ async def find_dc(vin_code, noproxy):
                 t = 0.1 + (random.randint(0, 100) / 200)
                 # time.sleep(round(t, 2))
                 try:
-                    print(vin)
+                    # print(vin)
                     await sql_adapter.create_dc_for_vin(vin[0], force)
                 except:
                     pass
