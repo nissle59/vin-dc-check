@@ -1,7 +1,7 @@
 import json
 import random
 
-from fastapi import FastAPI, responses, BackgroundTasks
+from fastapi import FastAPI, responses
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
@@ -54,63 +54,63 @@ async def updateVins():
         )
 
 
-@app.get("/bDc")
-async def bdc(vin, background_tasks: BackgroundTasks):
-    background_tasks.add_task(service.find_dc, vin)
+# @app.get("/bDc")
+# async def bdc(vin, background_tasks: BackgroundTasks):
+#     background_tasks.add_task(service.find_dc, vin)
+#
+#     res = json.dumps(
+#         {"status": "success"},
+#         ensure_ascii=False,
+#         indent=2,
+#         sort_keys=True,
+#         default=str
+#     )
+#     err = {"status": "error"}
+#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
+#
+#     if res:
+#         return responses.Response(
+#             content=res,
+#             status_code=200,
+#             media_type='application/json'
+#         )
+#
+#     else:
+#         return responses.Response(
+#             content=err,
+#             status_code=500,
+#             media_type='application/json'
+#         )
 
-    res = json.dumps(
-        {"status": "success"},
-        ensure_ascii=False,
-        indent=2,
-        sort_keys=True,
-        default=str
-    )
-    err = {"status": "error"}
-    err = json.dumps(err, indent=4, sort_keys=True, default=str)
-
-    if res:
-        return responses.Response(
-            content=res,
-            status_code=200,
-            media_type='application/json'
-        )
-
-    else:
-        return responses.Response(
-            content=err,
-            status_code=500,
-            media_type='application/json'
-        )
-
-@app.get("/mFindDc")
-async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
-    # config.threads = threads
-    background_tasks.add_task(
-        service.multithreaded_find_dcs, use_proxy
-    )
-    res = json.dumps(
-        {"status": "success"},
-        ensure_ascii=False,
-        indent=2,
-        sort_keys=True,
-        default=str
-    )
-    err = {"status": "error"}
-    err = json.dumps(err, indent=4, sort_keys=True, default=str)
-
-    if res:
-        return responses.Response(
-            content=res,
-            status_code=200,
-            media_type='application/json'
-        )
-
-    else:
-        return responses.Response(
-            content=err,
-            status_code=500,
-            media_type='application/json'
-        )
+# @app.get("/mFindDc")
+# async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
+#     # config.threads = threads
+#     background_tasks.add_task(
+#         service.multithreaded_find_dcs, use_proxy
+#     )
+#     res = json.dumps(
+#         {"status": "success"},
+#         ensure_ascii=False,
+#         indent=2,
+#         sort_keys=True,
+#         default=str
+#     )
+#     err = {"status": "error"}
+#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
+#
+#     if res:
+#         return responses.Response(
+#             content=res,
+#             status_code=200,
+#             media_type='application/json'
+#         )
+#
+#     else:
+#         return responses.Response(
+#             content=err,
+#             status_code=500,
+#             media_type='application/json'
+#         )
 
 
 @app.get("/findDc")
@@ -276,13 +276,13 @@ async def upd_prx():
         )
 
 
-@app.get("/qDc")
+@app.get("/bDc")
 async def qdc(vin):
     job = config.queue.enqueue(service.queue_dc, vin)
     print(job.__dict__)
 
     res = json.dumps(
-        {"status": "success", "job": job.id},
+        {"status": "success", "job": job.id, "jobCreatedAt": job.created_at},
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
@@ -306,9 +306,9 @@ async def qdc(vin):
         )
 
 
-@app.get("/qDcAll")
+@app.get("/mFindDc")
 async def qdc_all():
-    jobs = [job.id for job in await service.queue_dc_all()]
+    jobs = [{"id": job.id, "jobCreatedAt": job.created_at} for job in await service.queue_dc_all()]
 
     res = json.dumps(
         {"status": "success", "jobs": jobs},
