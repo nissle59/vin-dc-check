@@ -303,3 +303,32 @@ async def qdc(vin):
             status_code=500,
             media_type='application/json'
         )
+
+
+@app.get("/qDcAll")
+async def qdc_all():
+    jobs = [job.id for job in service.queue_dc_all]
+
+    res = json.dumps(
+        {"status": "success", "jobs": jobs},
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )

@@ -17,6 +17,15 @@ def queue_dc(vin_code):
     find_dc(vin_code)
 
 
+def queue_dc_all():
+    asyncio.run(update_proxies())
+    vins = asyncio.run(sql_adapter.get_vins_to_update())
+    jobs = []
+    for vin in vins:
+        jobs.append(config.queue.enqueue(find_dc, vin))
+    return jobs
+
+
 def find_dc(vin_code):
     config.logger.info(f'Started parsing of [{vin_code}]')
     t1 = threading.Thread(target=parser.process_thread, args=([vin_code],), daemon=True)
