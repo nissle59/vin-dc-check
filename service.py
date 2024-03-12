@@ -1,6 +1,7 @@
 import asyncio
 import random
 import threading
+from itertools import cycle
 from pathlib import Path
 
 import config
@@ -54,6 +55,7 @@ async def update_proxies():
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
     print(len(config.proxies))
+    config.r_proxies = cycle(config.proxies)
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
     # return config.proxies
