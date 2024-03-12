@@ -56,7 +56,7 @@ async def updateVins():
 
 @app.get("/bDc")
 async def bdc(vin, background_tasks: BackgroundTasks):
-    background_tasks.add_task(service.find_dc, (vin,))
+    background_tasks.add_task(service.find_dc, vin)
 
     res = json.dumps(
         {"status": "success"},
