@@ -1,0 +1,1 @@
+rq worker-pool vin-queue -n 20 -u redis://default:redispwd@redis.local:6379/0 -l INFO > 'workers.log' 2>&1
