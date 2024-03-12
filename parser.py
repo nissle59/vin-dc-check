@@ -138,7 +138,7 @@ class VinDcCheck:
 def process_thread(vins: list):
     try:
         prx = next(config.r_proxies)
-    except:
+    except StopIteration:
         config.r_proxies = cycle(config.proxies)
         prx = next(config.r_proxies)
     v = VinDcCheck(prx)
