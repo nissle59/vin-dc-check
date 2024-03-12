@@ -58,7 +58,7 @@ async def update_proxies():
     config.r_proxies = cycle(config.proxies)
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
-    # return config.proxies
+    return config.proxies
     #return await sql_adapter.update_proxies(proxies)
 
 
