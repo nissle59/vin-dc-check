@@ -17,9 +17,9 @@ def queue_dc(vin_code):
     find_dc(vin_code)
 
 
-def queue_dc_all():
-    asyncio.run(update_proxies())
-    vins = asyncio.run(sql_adapter.get_vins_to_update())
+async def queue_dc_all():
+    await update_proxies()
+    vins = await sql_adapter.get_vins_to_update()
     jobs = []
     for vin in vins:
         jobs.append(config.queue.enqueue(find_dc, vin))

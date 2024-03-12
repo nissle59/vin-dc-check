@@ -307,7 +307,7 @@ async def qdc(vin):
 
 @app.get("/qDcAll")
 async def qdc_all():
-    jobs = [job.id for job in service.queue_dc_all()]
+    jobs = [job.id for job in await service.queue_dc_all()]
 
     res = json.dumps(
         {"status": "success", "jobs": jobs},
