@@ -1,3 +1,4 @@
+import asyncio
 import threading
 from pathlib import Path
 
@@ -9,6 +10,11 @@ import sql_adapter
 async def multithreaded_find_dcs(use_proxy=True):
     vins = await sql_adapter.get_vins_to_update()
     parser.mulithreaded_processor(vins)
+
+
+def queue_dc(vin_code):
+    asyncio.run(update_proxies())
+    find_dc(vin_code)
 
 
 def find_dc(vin_code):
