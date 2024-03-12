@@ -33,42 +33,40 @@ async def find_dc(vin_code, noproxy):
     # v = parser.VinDcCheck()
     # c = 0
     vin = None
-    if noproxy:
-        vin = v.get_vin_code(vin_code)
-    else:
-        c = 0
-        prx = None
-        while c <= config.tries:
+    c = 0
+    prx = None
+    while c <= config.tries:
+        try:
+            force = False
+            if v.proxy:
+                # v.proxy = next(config.r_proxies)
+                config.logger.info(f'[{vin_code}] Trying proxy {v.proxy["http"]}')
+            # if not (vin.get('createdAt', None)):
+            #     force = True
+            # vin = v.get_vin_code(vin['vin'])
+            await sql_adapter.touch_vin_at(vin_code)
+            vin = v.get_vin_code(vin_code)
+            t = 0.1 + (random.randint(0, 100) / 200)
+            # time.sleep(round(t, 2))
             try:
-                force = False
-                if v.proxy:
-                    # v.proxy = next(config.r_proxies)
-                    config.logger.debug(f'Trying proxy {v.proxy["http"]}')
-                # if not (vin.get('createdAt', None)):
-                #     force = True
-                # vin = v.get_vin_code(vin['vin'])
-                await sql_adapter.touch_vin_at(vin_code)
-                vin = v.get_vin_code(vin_code)
-                t = 0.1 + (random.randint(0, 100) / 200)
-                # time.sleep(round(t, 2))
-                try:
-                    # print(vin)
-                    await sql_adapter.create_dc_for_vin(vin[0], force)
-                except:
-                    pass
-                # sql_adapter.create_dc_for_vin(vin)
-                # self.results.append(vin[0])
-                break
-            except StopIteration:
-                if v.proxy:
-                    config.r_proxies = cycle(config.proxies)
-                    v.proxy = next(config.r_proxies)
-                c += 1
-            except Exception as e:
-                # config.logger.info(e)
-                if v.proxy:
-                    v.proxy = next(config.r_proxies)
-                c += 1
+                # print(vin)
+                await sql_adapter.create_dc_for_vin(vin[0], force)
+            except:
+                pass
+            # sql_adapter.create_dc_for_vin(vin)
+            # self.results.append(vin[0])
+            break
+        except StopIteration:
+            config.logger.error(e)
+            if v.proxy:
+                config.r_proxies = cycle(config.proxies)
+                v.proxy = next(config.r_proxies)
+            c += 1
+        except Exception as e:
+            config.logger.error(e)
+            if v.proxy:
+                v.proxy = next(config.r_proxies)
+            c += 1
     #     while c <= config.tries:
     #         try:
     #             prx = next(config.r_proxies)

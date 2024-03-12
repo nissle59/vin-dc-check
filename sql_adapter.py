@@ -409,7 +409,7 @@ async def touch_vin_at(vin_number: str):
             query
         )
         if data is not None:
-            config.logger.debug(f'{vin_number} touch updated')
+            config.logger.info(f'{vin_number} touch updated')
             return True
         else:
             config.logger.error(f'{vin_number} touch NOT updated')
