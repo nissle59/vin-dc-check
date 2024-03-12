@@ -8,20 +8,10 @@ import sql_adapter
 
 async def multithreaded_find_dcs(use_proxy=True):
     vins = await sql_adapter.get_vins_to_update()
-    # config.logger.info(vins)
-    # v = parser.VinDcCheck()
-    # v.multithreading_get_vins(vins, use_proxy)
     parser.mulithreaded_processor(vins)
-    # print(v.results)
-    # result = None
-    # if v.results:
-    #     if len(v.results) > 0:
-    #         result = await sql_adapter.create_dc_for_vin_bulk(v.results)
-    #
-    # return result
 
 
-def find_dc(vin_code, noproxy):
+def find_dc(vin_code):
     config.logger.info(f'Started parsing of [{vin_code}]')
     t1 = threading.Thread(target=parser.process_thread, args=([vin_code],), daemon=True)
     t1.start()

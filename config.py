@@ -1,7 +1,9 @@
 import logging
-
 import sys
 from itertools import cycle
+
+from redis import Redis
+from rq import Queue, Worker
 
 DATABASE = {
     'host': 'db.local',
@@ -17,6 +19,12 @@ r_proxies = cycle(proxies)
 threads = 20
 touched_at = 7
 
+rc = Redis(host='redis.local', username='default', password='redispwd')
+queue = Queue(connection=rc, name='vin-queue')
+
+workers = Worker.all(queue=queue)
+
+
 logging.basicConfig(level=logging.INFO)
 
 handler = logging.FileHandler('app.log')
@@ -28,3 +36,8 @@ logger.addHandler(handler)
 logger.addHandler(s_handler)
 logger.setLevel(logging.INFO)
 logger.propagate = False
+
+logger.info(f'RQ({queue.get_redis_server_version()}) Workers:')
+for w in workers:
+    logger.info(f'\t{w.name} - {w.get_state()} - S {w.successful_job_count} - F {w.failed_job_count}')
+logger.info(f'Total workers: {len(workers)}')
