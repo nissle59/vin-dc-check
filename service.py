@@ -1,5 +1,4 @@
-import random
-from itertools import cycle
+import threading
 from pathlib import Path
 
 import config
@@ -22,51 +21,54 @@ async def multithreaded_find_dcs(use_proxy=True):
     # return result
 
 
-
-async def find_dc(vin_code, noproxy):
-    try:
-        prx = next(config.r_proxies)
-    except:
-        config.r_proxies = cycle(config.proxies)
-        prx = next(config.r_proxies)
-    v = parser.VinDcCheck(prx)
-    # v = parser.VinDcCheck()
+def find_dc(vin_code, noproxy):
+    config.logger.info(f'Started parsing of [{vin_code}]')
+    t1 = threading.Thread(target=parser.process_thread, args=([vin_code],), daemon=True)
+    t1.start()
+    t1.join()
+    # try:
+    #     prx = next(config.r_proxies)
+    # except:
+    #     config.r_proxies = cycle(config.proxies)
+    #     prx = next(config.r_proxies)
+    # v = parser.VinDcCheck(prx)
+    # # v = parser.VinDcCheck()
+    # # c = 0
+    # vin = None
     # c = 0
-    vin = None
-    c = 0
-    prx = None
-    while c <= config.tries:
-        try:
-            force = False
-            if v.proxy:
-                # v.proxy = next(config.r_proxies)
-                config.logger.info(f'[{vin_code}] Trying proxy {v.proxy["http"]}')
-            # if not (vin.get('createdAt', None)):
-            #     force = True
-            # vin = v.get_vin_code(vin['vin'])
-            await sql_adapter.touch_vin_at(vin_code)
-            vin = v.get_vin_code(vin_code)
-            t = 0.1 + (random.randint(0, 100) / 200)
-            # time.sleep(round(t, 2))
-            try:
-                # print(vin)
-                await sql_adapter.create_dc_for_vin(vin[0], force)
-            except:
-                pass
-            # sql_adapter.create_dc_for_vin(vin)
-            # self.results.append(vin[0])
-            break
-        except StopIteration:
-            config.logger.error(e)
-            if v.proxy:
-                config.r_proxies = cycle(config.proxies)
-                v.proxy = next(config.r_proxies)
-            c += 1
-        except Exception as e:
-            config.logger.error(e)
-            if v.proxy:
-                v.proxy = next(config.r_proxies)
-            c += 1
+    # prx = None
+    # while c <= config.tries:
+    #     try:
+    #         force = False
+    #         if v.proxy:
+    #             # v.proxy = next(config.r_proxies)
+    #             config.logger.info(f'[{vin_code}] Trying proxy {v.proxy["http"]}')
+    #         # if not (vin.get('createdAt', None)):
+    #         #     force = True
+    #         # vin = v.get_vin_code(vin['vin'])
+    #         await sql_adapter.touch_vin_at(vin_code)
+    #         vin = v.get_vin_code(vin_code)
+    #         t = 0.1 + (random.randint(0, 100) / 200)
+    #         # time.sleep(round(t, 2))
+    #         try:
+    #             # print(vin)
+    #             await sql_adapter.create_dc_for_vin(vin[0], force)
+    #         except:
+    #             pass
+    #         # sql_adapter.create_dc_for_vin(vin)
+    #         # self.results.append(vin[0])
+    #         break
+    #     except StopIteration:
+    #         config.logger.error(e)
+    #         if v.proxy:
+    #             config.r_proxies = cycle(config.proxies)
+    #             v.proxy = next(config.r_proxies)
+    #         c += 1
+    #     except Exception as e:
+    #         config.logger.error(e)
+    #         if v.proxy:
+    #             v.proxy = next(config.r_proxies)
+    #         c += 1
     #     while c <= config.tries:
     #         try:
     #             prx = next(config.r_proxies)
