@@ -279,7 +279,7 @@ async def upd_prx():
 @app.get("/bDc")
 async def qdc(vin):
     job = config.queue.enqueue(service.queue_dc, vin)
-    print(job.__dict__)
+    # print(job.__dict__)
 
     res = json.dumps(
         {"status": "success", "job": job.id, "jobCreatedAt": job.created_at},
