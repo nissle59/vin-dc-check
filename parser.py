@@ -346,8 +346,11 @@ def process_thread(vins: list):
                 if v.proxy:
                     # v.proxy = next(config.r_proxies)
                     config.logger.debug(f'Trying proxy {v.proxy["http"]}')
-                if not (vin.get('createdAt', None)):
+                if isinstance(vin, str) or not (vin.get('createdAt', None)):
                     force = True
+                    vin = {
+                        'vin': vin
+                    }
                 # vin = v.get_vin_code(vin['vin'])
                 try:
                     asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
