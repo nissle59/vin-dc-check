@@ -1,4 +1,5 @@
 import asyncio
+import random
 import threading
 from pathlib import Path
 
@@ -12,17 +13,22 @@ async def multithreaded_find_dcs(use_proxy=True):
     parser.mulithreaded_processor(vins)
 
 
-def queue_dc(vin_code):
+async def queue_dc(vin_code):
+    await update_proxies()
+    find_dc(vin_code)
+
+
+def q_dc(vin_code):
     asyncio.run(update_proxies())
     find_dc(vin_code)
 
 
 async def queue_dc_all():
-    await update_proxies()
+    # await update_proxies()
     vins = await sql_adapter.get_vins_to_update()
     jobs = []
     for vin in vins:
-        jobs.append(config.queue.enqueue(find_dc, vin))
+        jobs.append(config.queue.enqueue(queue_dc, vin))
     return jobs
 
 
@@ -42,12 +48,15 @@ async def dcs_ended(vin_code):
 
 
 async def update_proxies():
-    proxies = parser.get_proxies_from_url()
+    #proxies = parser.get_proxies_from_url()
     config.proxies = [{'http': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{proxy["port"]}',
                        'https': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
-    return await sql_adapter.update_proxies(proxies)
+    for i in range(random.randint(0, len(config.proxies))):
+        next(config.r_proxies)
+    return config.proxies
+    #return await sql_adapter.update_proxies(proxies)
 
 
 async def update_vins():
