@@ -55,7 +55,7 @@ async def update_proxies():
                       await sql_adapter.get_active_proxies('HTTPS')]
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
-    return config.proxies
+    # return config.proxies
     #return await sql_adapter.update_proxies(proxies)
 
 
