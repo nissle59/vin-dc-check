@@ -38,6 +38,6 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 logger.info(f'RQ({queue.get_redis_server_version()}) Workers:')
-for w in workers:
-    logger.info(f'\t{w.name} - {w.get_state()} - S {w.successful_job_count} - F {w.failed_job_count}')
+# for w in workers:
+#     logger.info(f'\t{w.name} - {w.get_state()} - S {w.successful_job_count} - F {w.failed_job_count}')
 logger.info(f'Total workers: {len(workers)}')
