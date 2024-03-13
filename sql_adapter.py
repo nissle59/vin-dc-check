@@ -319,16 +319,7 @@ async def find_vin_ended_dcs(vin):
 
 async def get_vins_to_update():
     # touched_at = config.touched_at
-    query = f"SELECT * FROM dc_base.vins_to_update"
-    query = """
-    SELECT DISTINCT vs.vin,
-    vs.created_at
-   FROM dc_base.vins vs
-     LEFT JOIN dc_base.diagnostic_cards dc ON dc.vin::text = vs.vin::text
-  WHERE vs.created_at IS NULL OR vs.touched_at IS NULL OR (now() - vs.touched_at::timestamp) >= (( SELECT s.value::interval AS setting_value
-           FROM settings s
-          WHERE s.setting_name::text = 'touch_dcs_interval'::text))
-    """
+    query = "SELECT * FROM dc_base.vins_to_update"
     # query = f"select vin, created_at from dcs
     # where dc_number is null or expiry_date < now() or created_at is null or (now()-touched_at) >= '{touched_at} days'"
 
