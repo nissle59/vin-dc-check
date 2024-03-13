@@ -325,13 +325,13 @@ async def get_vins_to_update():
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
-    config.logger.info(data)
-    if data is None:
-        return []
-    # config.logger.info(data)
-    data = [{'vin': item['vin'], 'createdAt': item['createdAt']} for item in list_detector_to_list(data)]
-    # config.logger.info(data)
-    return data
+        config.logger.info(data)
+        if data is None:
+            return []
+        # config.logger.info(data)
+        data = [{'vin': item['vin'], 'createdAt': item['createdAt']} for item in list_detector_to_list(data)]
+        # config.logger.info(data)
+        return data
 
 
 async def update_vin(dict_of_vin):
