@@ -325,7 +325,7 @@ async def get_vins_to_update():
     vs.created_at
    FROM dc_base.vins vs
      LEFT JOIN dc_base.diagnostic_cards dc ON dc.vin::text = vs.vin::text
-  WHERE vs.created_at IS NULL OR vs.touched_at IS NULL OR (now() - vs.touched_at::timestamp with time zone) >= (( SELECT s.value::interval AS setting_value
+  WHERE vs.created_at IS NULL OR vs.touched_at IS NULL OR (now() - vs.touched_at::timestamp) >= (( SELECT s.value::interval AS setting_value
            FROM settings s
           WHERE s.setting_name::text = 'touch_dcs_interval'::text))
     """
