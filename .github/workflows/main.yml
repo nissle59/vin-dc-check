@@ -1,0 +1,14 @@
+name: CI
+on:
+   # События, которые запускают jobs
+    push:
+      branches: [ "master" ]
+
+jobs:
+    # Название job вы можете назвать как угодно
+    my_build_job:
+      name: recreate container
+      runs-on: self-hosted
+      steps:
+        - name: Go upd
+          run: bash /opt/vin-dc-check/upd_repo.sh
