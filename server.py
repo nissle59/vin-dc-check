@@ -54,33 +54,33 @@ async def updateVins():
         )
 
 
-# @app.get("/bDc")
-# async def bdc(vin, background_tasks: BackgroundTasks):
-#     background_tasks.add_task(service.find_dc, vin)
-#
-#     res = json.dumps(
-#         {"status": "success"},
-#         ensure_ascii=False,
-#         indent=2,
-#         sort_keys=True,
-#         default=str
-#     )
-#     err = {"status": "error"}
-#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
-#
-#     if res:
-#         return responses.Response(
-#             content=res,
-#             status_code=200,
-#             media_type='application/json'
-#         )
-#
-#     else:
-#         return responses.Response(
-#             content=err,
-#             status_code=500,
-#             media_type='application/json'
-#         )
+@app.get("/bDc")
+async def bdc(vin, background_tasks: BackgroundTasks):
+    background_tasks.add_task(service.find_dc, vin)
+
+    res = json.dumps(
+        {"status": "success"},
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+        default=str
+    )
+    err = {"status": "error"}
+    err = json.dumps(err, indent=4, sort_keys=True, default=str)
+
+    if res:
+        return responses.Response(
+            content=res,
+            status_code=200,
+            media_type='application/json'
+        )
+
+    else:
+        return responses.Response(
+            content=err,
+            status_code=500,
+            media_type='application/json'
+        )
 
 @app.get("/mFindDc")
 async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
@@ -276,7 +276,7 @@ async def upd_prx():
         )
 
 
-@app.get("/bDc")
+@app.get("/qDc")
 async def qdc(vin):
     job = config.queue.enqueue(service.queue_dc, vin, timeout=3600)
     # print(job.__dict__)

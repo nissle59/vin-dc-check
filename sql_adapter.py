@@ -325,7 +325,7 @@ async def get_vins_to_update():
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
-        config.logger.info(data)
+        # config.logger.info(data)
         if data is None:
             return []
         # config.logger.info(data)
