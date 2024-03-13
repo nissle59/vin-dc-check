@@ -11,7 +11,7 @@ import sql_adapter
 
 async def multithreaded_find_dcs(use_proxy=True):
     vins = await sql_adapter.get_vins_to_update()
-    print(vins)
+    # print(vins)
     parser.mulithreaded_processor(vins)
 
 
