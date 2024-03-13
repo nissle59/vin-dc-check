@@ -305,31 +305,30 @@ async def qdc(vin):
             media_type='application/json'
         )
 
-
-@app.get("/qFindDc")
-async def qdc_all():
-    jobs = [{"id": job.id, "jobCreatedAt": job.created_at} for job in await service.queue_dc_all()]
-
-    res = json.dumps(
-        {"status": "success", "jobs": jobs},
-        ensure_ascii=False,
-        indent=2,
-        sort_keys=True,
-        default=str
-    )
-    err = {"status": "error"}
-    err = json.dumps(err, indent=4, sort_keys=True, default=str)
-
-    if res:
-        return responses.Response(
-            content=res,
-            status_code=200,
-            media_type='application/json'
-        )
-
-    else:
-        return responses.Response(
-            content=err,
-            status_code=500,
-            media_type='application/json'
-        )
+# @app.get("/qFindDc")
+# async def qdc_all():
+#     jobs = [{"id": job.id, "jobCreatedAt": job.created_at} for job in await service.queue_dc_all()]
+#
+#     res = json.dumps(
+#         {"status": "success", "jobs": jobs},
+#         ensure_ascii=False,
+#         indent=2,
+#         sort_keys=True,
+#         default=str
+#     )
+#     err = {"status": "error"}
+#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
+#
+#     if res:
+#         return responses.Response(
+#             content=res,
+#             status_code=200,
+#             media_type='application/json'
+#         )
+#
+#     else:
+#         return responses.Response(
+#             content=err,
+#             status_code=500,
+#             media_type='application/json'
+#         )

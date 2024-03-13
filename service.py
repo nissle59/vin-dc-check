@@ -25,18 +25,18 @@ def q_dc(vin_code):
     find_dc(vin_code)
 
 
-async def queue_dc_all():
-    # await update_proxies()
-    vins = await sql_adapter.get_vins_to_update()
-    jobs = []
-    for vin in vins:
-        jobs.append(config.queue.enqueue(multi_dc, vin, timeout=3600))
-    return jobs
+# async def queue_dc_all():
+#     # await update_proxies()
+#     vins = await sql_adapter.get_vins_to_update()
+#     jobs = []
+#     for vin in vins:
+#         jobs.append(config.queue.enqueue(multi_dc, vin, timeout=3600))
+#     return jobs
 
 
-def multi_dc(vins):
-    asyncio.run(update_proxies())
-    parser.mulithreaded_processor(vins)
+# def multi_dc(vins):
+#     asyncio.run(update_proxies())
+#     parser.mulithreaded_processor(vins)
 
 
 def find_dc(vin_code):
