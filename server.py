@@ -108,7 +108,7 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
     #     service.multithreaded_find_dcs, use_proxy
     # )
     res = json.dumps(
-        {"status": "success"},
+        res,
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
