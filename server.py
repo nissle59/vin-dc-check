@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import config
 import service
+import sql_adapter
 
 app = FastAPI()
 
@@ -85,9 +86,27 @@ async def bdc(vin, background_tasks: BackgroundTasks):
 @app.get("/mFindDc")
 async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
     # config.threads = threads
-    background_tasks.add_task(
-        service.multithreaded_find_dcs, use_proxy
-    )
+    bg_tasks = await sql_adapter.check_bg_tasks()
+    if len(bg_tasks) > 0:
+        res = {"status": "in process"}
+        d = {'bg_tasks': []}
+        for bg_task in bg_tasks:
+            d['bg_tasks'].append(
+                {
+                    'id': bg_task['id'],
+                    'startAt': bg_task['startAt'].strftime('%Y-%m-%d %H:%M:%S')
+                }
+            )
+        res.update(d)
+    else:
+        task = await sql_adapter.add_bg_task()
+        background_tasks.add_task(
+            service.multithreaded_find_dcs, use_proxy, task
+        )
+        res = {"status": "task started", 'task_id': task['id']}
+    # background_tasks.add_task(
+    #     service.multithreaded_find_dcs, use_proxy
+    # )
     res = json.dumps(
         {"status": "success"},
         ensure_ascii=False,

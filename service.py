@@ -9,10 +9,11 @@ import parser
 import sql_adapter
 
 
-async def multithreaded_find_dcs(use_proxy=True):
+async def multithreaded_find_dcs(use_proxy=True, task=None):
     vins = await sql_adapter.get_vins_to_update()
     # print(vins)
     parser.mulithreaded_processor(vins)
+    await sql_adapter.done_bg_task(task['id'])
 
 
 async def queue_dc(vin_code):

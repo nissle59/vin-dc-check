@@ -489,3 +489,42 @@ async def update_proxies(plist):
         "count": count,
         "result": data
     }
+
+
+async def check_bg_tasks():
+    q = f"""select * from dc_base.bg_tasks where done is false"""
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(q)
+
+    if data is None:
+        return []
+
+    data = list_detector_to_list(data)
+
+    return data
+
+
+async def add_bg_task():
+    q = f"""insert into dc_base.bg_tasks (done) VALUES (false) returning *"""
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(q)
+
+    if data is None:
+        return []
+
+    data = list_detector_to_list(data)
+
+    return data[0]
+
+
+async def done_bg_task(id):
+    q = f"""update dc_base.bg_tasks SET done=true where id = {id} returning *"""
+    async with AsyncDatabase(**conf) as db:
+        data = await db.fetch(q)
+
+    if data is None:
+        return []
+
+    data = list_detector_to_list(data)
+
+    return data[0]
