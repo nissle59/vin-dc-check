@@ -135,7 +135,7 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
 @app.get("/findDc")
 async def getdc(vin, noproxy=False):
     res = json.dumps(
-        await service.find_dc(vin, noproxy),
+        await service.find_dc(vin),
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
