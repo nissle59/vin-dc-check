@@ -92,7 +92,7 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
         res = {"status": "in process"}
         d = {'bg_tasks': []}
         for bg_task in bg_tasks:
-            t_diff = (bg_task['startAt'] - datetime.datetime.now()).total_seconds()
+            t_diff = (datetime.datetime.now() - bg_task['startAt'] - 10800).total_seconds()
             print(f'Total bg_task t_diff seconds: {t_diff}')
             if t_diff > 28800:
                 config.error('Парсер VIN обрабатывает задачу уже 8 часов!!')
