@@ -357,14 +357,14 @@ async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
     # await touch_vin_at(dict_of_vin["vin"])
     async with AsyncDatabase(**conf) as db:
         data = await db.execute(query, items_tuple)
-        if data is not None:
-            previous_dc_list = set_items_arr_for_prev_dks(dict_of_vin)
-            query = get_insert_query(False)
-            await db.executemany(query, previous_dc_list)
-            await update_vin_at(dict_of_vin["vin"])
-            return True
-        else:
-            return False
+        # if data is not None:
+        previous_dc_list = set_items_arr_for_prev_dks(dict_of_vin)
+        query = get_insert_query(False)
+        await db.executemany(query, previous_dc_list)
+    await update_vin_at(dict_of_vin["vin"])
+    return True
+    # else:
+    #     return False
 
 
 async def create_dc_for_vin_bulk(list_of_vins):
