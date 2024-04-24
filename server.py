@@ -2,7 +2,7 @@ import datetime
 import json
 import random
 
-import docker
+import requests
 from fastapi import FastAPI, responses, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -98,11 +98,9 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
             if t_diff > 28800:
                 config.error('Парсер VIN обрабатывает задачу уже 8 часов!! Сброс задачи')
                 await sql_adapter.done_bg_task(bg_task['id'])
-                client = docker.DockerClient(base_url='tcp://10.8.0.5:2375')
-                # Get the container object by name or ID
-                container = client.containers.get('parser_vin_dc_gibdd')
-                # Restart the container
-                container.restart()
+                requests.post(
+                    url="http://10.8.0.5:2375/v1.24/containers/parser_vin_dc_gibdd/restart"
+                )
             d['bg_tasks'].append(
                 {
                     'id': bg_task['id'],
