@@ -528,3 +528,25 @@ async def done_bg_task(id):
     data = list_detector_to_list(data)
 
     return data[0]
+
+
+async def last_upd_vin(vin_number: str):
+    async with AsyncDatabase(**conf) as db:
+        query = f"""
+            UPDATE dc_base.vins
+            SET last_updated_at=CURRENT_TIMESTAMP
+            WHERE vin=$1;
+            """
+        data = await db.execute(
+            query,
+            (vin_number,)
+        )
+        if data is not None:
+            config.logger.debug(f'{vin_number} LAST_UPD updated')
+            return True
+        else:
+            config.logger.error(f'{vin_number} LAST_UPD NOT updated')
+            return False
+
+
+None

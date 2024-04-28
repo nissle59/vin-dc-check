@@ -161,6 +161,10 @@ def process_thread(vins: list):
                     asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
                 except:
                     pass
+                try:
+                    asyncio.run(sql_adapter.last_upd_vin(vin[0]["vin"]))
+                except:
+                    pass
                 break
             except StopIteration:
                 if v.proxy:
