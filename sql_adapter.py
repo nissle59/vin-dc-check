@@ -72,7 +72,8 @@ def get_insert_query(force_rewrite):
                         $5::int4,
                         $6::int4,
                         $7::timestamp,
-                        $8::timestamp
+                        $8::timestamp,
+                        $9::bool
                     ) ON CONFLICT (card_number) DO 
                     UPDATE SET 
                         vin=$2, 
@@ -80,7 +81,8 @@ def get_insert_query(force_rewrite):
                         expiry_date=$4::date, 
                         odometer_value=$5::int4,
                         operator_number=$6::int4,
-                        updated_at=$7::timestamp
+                        updated_at=$7::timestamp,
+                        is_active=$9::bool
                 """
     if force_rewrite:
         query += ",created_at=$8::timestamp"
@@ -157,7 +159,8 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             int(dict_of_vin['odometerValue']),
             int(dict_of_vin['operatorName']),
             dt_now_timestamp,
-            dt_now_timestamp
+            dt_now_timestamp,
+            True
         )
     else:
         items_tuple = [
@@ -168,7 +171,8 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
             int(dict_of_vin['odometerValue']),
             int(dict_of_vin['operatorName']),
             dt_now_timestamp,
-            dt_now_timestamp
+            dt_now_timestamp,
+            True
         ]
     return items_tuple
 
@@ -189,7 +193,8 @@ def set_items_arr_for_prev_dks(dict_of_vin):
             int(dc['odometerValue']),
             op_num,
             dt_now_timestamp,
-            dt_now_timestamp
+            dt_now_timestamp,
+            False
         )
         items.append(item_tuple)
     return items
