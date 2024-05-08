@@ -131,6 +131,11 @@ class VinDcCheck:
                     result = None
                 except Exception as e:
                     config.logger.error(f'{vin_code} - Failed')
+                    with open(f'responses/{vin_code}_FAILED.txt', 'w') as f:
+                        ex = ''
+                        for arg in e.args:
+                            ex += arg + '\n'
+                        f.write(r.text + '\n\n' + str(ex))
                     result = None
             return result
 
