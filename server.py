@@ -30,7 +30,7 @@ async def startup():
     await service.update_proxies()
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
-    LOGGER.info('Updating started', config.name)
+    LOGGER.info("%s: " + 'Updating started', config.name)
     # await mdc()
 
 
@@ -103,7 +103,7 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
             t_diff = (datetime.datetime.now() - bg_task['startAt']).total_seconds() - 10800
             print(f'Total bg_task t_diff seconds: {t_diff}')
             if t_diff > 28800:
-                LOGGER.error('Парсер VIN обрабатывает задачу уже 8 часов!! Сброс задачи', config.name)
+                LOGGER.error("%s: " + 'Парсер VIN обрабатывает задачу уже 8 часов!! Сброс задачи', config.name)
                 await sql_adapter.done_bg_task(bg_task['id'])
                 requests.post(
                     url="http://10.8.0.5:2375/v1.24/containers/parser_vin_dc_gibdd/restart"

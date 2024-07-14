@@ -459,10 +459,10 @@ async def update_vin_at(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            LOGGER.debug(f'{vin_number} UPD updated', config.name)
+            LOGGER.debug("%s: " + f'{vin_number} UPD updated', config.name)
             return True
         else:
-            LOGGER.error(f'{vin_number} UPD NOT updated', config.name)
+            LOGGER.error("%s: " + f'{vin_number} UPD NOT updated', config.name)
             return False
 
 
@@ -579,8 +579,8 @@ async def last_upd_vin(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            LOGGER.debug(f'{vin_number} LAST_UPD updated', config.name)
+            LOGGER.debug("%s: " + f'{vin_number} LAST_UPD updated', config.name)
             return True
         else:
-            LOGGER.error(f'{vin_number} LAST_UPD NOT updated', config.name)
+            LOGGER.error("%s: " + f'{vin_number} LAST_UPD NOT updated', config.name)
             return False

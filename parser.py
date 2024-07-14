@@ -118,16 +118,18 @@ class VinDcCheck:
                 res_status = res.get('RequestResult', {'status': 'ERROR'}).get('status', 'ERROR')
                 if res_status in ['NO_DATA', 'ERROR']:
                     result = []
-                    LOGGER.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS', config.name)
+                    LOGGER.info("%s: " + f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS',
+                                config.name)
                     return result
                 result = res.get('RequestResult').get('diagnosticCards')
 
                 for r in result:
                     r['vin'] = vin_code
-                LOGGER.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - {str(result[0]["dcNumber"])}', config.name)
+                LOGGER.info("%s: " + f'[{self.captcha_iter} - {c_code}] {vin_code} - {str(result[0]["dcNumber"])}',
+                            config.name)
 
             except Exception as e:
-                LOGGER.info(f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS', config.name)
+                LOGGER.info("%s: " + f'[{self.captcha_iter} - {c_code}] {vin_code} - NO DIAGNOSTIC CARDS', config.name)
                 try:
                     if r.status_code('code', 200) in ['201', 201]:
                         print(r.content)
@@ -139,7 +141,7 @@ class VinDcCheck:
                             f.write(str(r.status_code) + '\n' + r.text + '\n\n' + str(ex))
                     result = None
                 except Exception as e:
-                    LOGGER.error(f'{vin_code} - Failed', config.name, exc_info=True)
+                    LOGGER.error("%s: " + f'{vin_code} - Failed', config.name, exc_info=True)
                     with open(f'responses/{vin_code}_FAILED.txt', 'w') as f:
                         ex = ''
                         for arg in e.args:
@@ -163,14 +165,14 @@ def process_thread(vins: list):
             try:
                 force = False
                 if v.proxy:
-                    LOGGER.debug(f'Trying proxy {v.proxy["http"]}', config.name)
+                    LOGGER.debug("%s: " + f'Trying proxy {v.proxy["http"]}', config.name)
                 if isinstance(vin, str) or not (vin.get('createdAt', None)):
                     force = True
                     vin = {'vin': vin}
                 try:
                     asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
                 except Exception as e:
-                    LOGGER.error(e, config.name, exc_info=True)
+                    LOGGER.error("%s: " + e, config.name, exc_info=True)
                 vin = v.get_vin_code(vin['vin'])
                 try:
                     asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
@@ -187,7 +189,7 @@ def process_thread(vins: list):
                     v.proxy = next(config.r_proxies)
                 c += 1
             except Exception as e:
-                LOGGER.error(e, config.name, exc_info=True)
+                LOGGER.error("%s: " + e, config.name, exc_info=True)
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
                 c += 1
@@ -207,7 +209,7 @@ def mulithreaded_processor(vins: list):
         vins_lists = []
         if vins_in_thread > 0:
             for i in range(0, threads_count + 1):
-                LOGGER.info(f'{i + 1} of {config.threads}', config.name)
+                LOGGER.info("%s: " + f'{i + 1} of {config.threads}', config.name)
                 slice_low = vins_in_thread * i
                 slice_high = slice_low + vins_in_thread
                 if slice_high > len(vins):
@@ -219,17 +221,17 @@ def mulithreaded_processor(vins: list):
                     threading.Thread(target=process_thread, args=(vins_lists[i],), daemon=True))
             for thread in array_of_threads:
                 thread.start()
-                LOGGER.info(
+                LOGGER.info("%s: " +
                     f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins',
                     config.name)
 
             for thread in array_of_threads:
                 thread.join()
-                LOGGER.info(
+                LOGGER.info("%s: " +
                     f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(vins_lists[array_of_threads.index(thread)])} vins',
                     config.name)
         else:
-            LOGGER.info(f'Started parsing of {length_of_vins_list} vin in 1 thread...', config.name)
+            LOGGER.info("%s: " + f'Started parsing of {length_of_vins_list} vin in 1 thread...', config.name)
             t1 = threading.Thread(target=process_thread, args=(vins,), daemon=True)
             t1.start()
             t1.join()
@@ -244,9 +246,9 @@ def mulithreaded_processor(vins: list):
             dt_str = f'{length_of_vins_list} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
         else:
             dt_str = f'{length_of_vins_list} records: {round(dt_diff)} seconds passed'
-        LOGGER.info(dt_str, config.name)
+        LOGGER.info("%s: " + dt_str, config.name)
     else:
-        LOGGER.info(f'VINs list is empty. All VINs are up to date.', config.name)
+        LOGGER.info("%s: " + f'VINs list is empty. All VINs are up to date.', config.name)
 
 
 if __name__ == '__main__':

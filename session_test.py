@@ -66,13 +66,13 @@ class VinDcCheck:
             r = self.session.get(self.captch_req_url, verify=False)
         if r:
             result = r.json()
-            # LOGGER.info(result.get('token'))
+            # LOGGER.info("%s: " + result.get('token'))
             res = self.resolve_captcha(result.get('base64jpg'))
-            # LOGGER.info(js)
+            # LOGGER.info("%s: " + js)
             result.update({'code': res})
         else:
             result = None
-        # LOGGER.info(json.dumps(result, ensure_ascii=False, indent=2))
+        # LOGGER.info("%s: " + json.dumps(result, ensure_ascii=False, indent=2))
         # with open('session.headers', 'w', encoding='utf-8') as f:
         #     f.write(json.dumps(self.session.headers.__dict__, ensure_ascii=False, indent=2))
         #     f.write(json.dumps(r.headers.__dict__, ensure_ascii=False, indent=2))
@@ -155,7 +155,7 @@ class VinDcCheck:
     #                 force = False
     #                 if use_proxy:
     #                     prx = next(config.r_proxies)
-    #                     LOGGER.debug(f'Trying proxy {prx["http"]}')
+    #                     LOGGER.debug("%s: " + f'Trying proxy {prx["http"]}')
     #                 if not (vin.get('createdAt', None)):
     #                     force = True
     #                 vin = self.get_vin_code(vin['vin'], prx)
@@ -169,7 +169,7 @@ class VinDcCheck:
     #                     prx = next(config.r_proxies)
     #                 c += 1
     #             except Exception as e:
-    #                 LOGGER.info(e)
+    #                 LOGGER.info("%s: " + e)
     #                 if use_proxy:
     #                     prx = next(config.r_proxies)
     #                 c += 1
@@ -196,7 +196,7 @@ class VinDcCheck:
     #
     #     l_c = []
     #     for i in range(0, config.threads):
-    #         LOGGER.info(f'{i + 1} of {config.threads}')
+    #         LOGGER.info("%s: " + f'{i + 1} of {config.threads}')
     #         min = l_count * i
     #         max = min + l_count
     #         if max > len(vins):
@@ -208,11 +208,11 @@ class VinDcCheck:
     #             threading.Thread(target=self.get_vin_codes, args=(l_c[i], use_proxy), daemon=True))
     #     for t in t_s:
     #         t.start()
-    #         LOGGER.info(f'Started thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
+    #         LOGGER.info("%s: " + f'Started thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
     #
     #     for t in t_s:
     #         t.join()
-    #         LOGGER.info(f'Joined thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
+    #         LOGGER.info("%s: " + f'Joined thread #{t_s.index(t) + 1} of {len(t_s)} with {len(l_c[t_s.index(t)])} vins')
     #     stop_dt = datetime.datetime.now()
     #     dt_diff = (stop_dt - start_dt).total_seconds()
     #     if dt_diff > 60:
@@ -224,7 +224,7 @@ class VinDcCheck:
     #         dt_str = f'{arr_length} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
     #     else:
     #         dt_str = f'{arr_length} records: {round(dt_diff)} seconds passed'
-    #     LOGGER.info(dt_str)
+    #     LOGGER.info("%s: " + dt_str)
 
 
 def process_thread(vins: list):
@@ -243,7 +243,7 @@ def process_thread(vins: list):
                 force = False
                 if v.proxy:
                     # v.proxy = next(config.r_proxies)
-                    LOGGER.debug(f'Trying proxy {v.proxy["http"]}')
+                    LOGGER.debug("%s: " + f'Trying proxy {v.proxy["http"]}', config.name)
                 if not (vin.get('createdAt', None)):
                     force = True
                 # vin = v.get_vin_code(vin['vin'])
@@ -260,7 +260,7 @@ def process_thread(vins: list):
                     v.proxy = next(config.r_proxies)
                 c += 1
             except Exception as e:
-                LOGGER.info(e)
+                LOGGER.info("%s: " + e, config.name)
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
                 c += 1
@@ -277,7 +277,7 @@ def mulithreaded_processor():
 
     l_c = []
     for i in range(0, threads_count):
-        LOGGER.info(f'{i + 1} of {config.threads}')
+        LOGGER.info("%s: " + f'{i + 1} of {config.threads}', config.name)
         slice_low = vins_in_thread * i
         slice_high = slice_low + vins_in_thread
         if slice_high > len(vins):
@@ -290,12 +290,14 @@ def mulithreaded_processor():
     for thread in array_of_threads:
         thread.start()
         LOGGER.info(
-            f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(l_c[array_of_threads.index(thread)])} vins')
+            "%s: " + f'Started thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(l_c[array_of_threads.index(thread)])} vins',
+            config.name)
 
     for thread in array_of_threads:
         thread.join()
         LOGGER.info(
-            f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(l_c[array_of_threads.index(thread)])} vins')
+            "%s: " + f'Joined thread #{array_of_threads.index(thread) + 1} of {len(array_of_threads)} with {len(l_c[array_of_threads.index(thread)])} vins',
+            config.name)
     stop_dt = datetime.datetime.now()
     dt_diff = (stop_dt - start_dt).total_seconds()
     if dt_diff > 60:
@@ -307,7 +309,7 @@ def mulithreaded_processor():
         dt_str = f'{length_of_vins_list} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
     else:
         dt_str = f'{length_of_vins_list} records: {round(dt_diff)} seconds passed'
-    LOGGER.info(dt_str)
+    LOGGER.info("%s: " + dt_str, config.name)
 
 
 if __name__ == '__main__':
