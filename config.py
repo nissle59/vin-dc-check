@@ -2,6 +2,8 @@ import json
 import logging.config
 from itertools import cycle
 
+name = "VIN DC Parser"
+
 logging.config.dictConfig(json.load(open('logging.json', 'r')))
 LOGGER = logging.getLogger(__name__)
 

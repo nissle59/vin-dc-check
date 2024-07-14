@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 from itertools import cycle
 from pathlib import Path
@@ -8,11 +9,13 @@ from database import AsyncDatabase
 
 
 def del_tz(dt: datetime.datetime):
+    LOGGER = logging.getLogger(__name__ + ".del_tz")
     dt = dt.replace(tzinfo=None)
     return dt
 
 
 def convert_to_ts(s: str):
+    LOGGER = logging.getLogger(__name__ + ".convert_to_ts")
     dt = datetime.datetime.strptime(s, '%Y-%m-%d')
     dt = del_tz(dt)
     # dt = s
@@ -24,6 +27,7 @@ under_pat = re.compile(r'_([a-z])')
 
 
 def get_vins_add_query():
+    LOGGER = logging.getLogger(__name__ + ".get_vin_add_query")
     query = f"""
                 INSERT INTO 
                     dc_base.vins 
@@ -34,6 +38,7 @@ def get_vins_add_query():
 
 
 def get_insert_query(force_rewrite):
+    LOGGER = logging.getLogger(__name__ + ".get_insert_query")
     # query = f"""
     #             INSERT INTO
     #                 dcs
@@ -90,6 +95,7 @@ def get_insert_query(force_rewrite):
 
 
 def get_update_vin_record_query():
+    LOGGER = logging.getLogger(__name__ + ".get_update_vin_record_query")
     query = """
                 UPDATE dc_base.vins
                 SET model=$2, brand=$3
@@ -117,6 +123,7 @@ def get_update_vin_record_query():
 
 
 def get_insert_proxy_query():
+    LOGGER = logging.getLogger(__name__ + ".get_insert_proxy_query")
     query = f'''
                 INSERT INTO 
                     dc_base.proxies 
@@ -141,6 +148,7 @@ def get_insert_proxy_query():
 
 
 def set_items_tuple_create_vin_record(vins):
+    LOGGER = logging.getLogger(__name__ + ".set_items_tuple_create_vin_record")
     items = []
     for vin in vins:
         items_tuple = (vin,)
@@ -149,6 +157,7 @@ def set_items_tuple_create_vin_record(vins):
 
 
 def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
+    LOGGER = logging.getLogger(__name__ + ".set_items_tuple_create_dc_record")
     dt_now_timestamp = del_tz(datetime.datetime.now())
     if execute_many_flag is True:
         items_tuple = (
@@ -178,6 +187,7 @@ def set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False):
 
 
 def set_items_arr_for_prev_dks(dict_of_vin):
+    LOGGER = logging.getLogger(__name__ + ".set_items_arr_for_prev_dks")
     items = []
     dt_now_timestamp = del_tz(datetime.datetime.now())
     for dc in dict_of_vin["previousDcs"]:
@@ -201,10 +211,12 @@ def set_items_arr_for_prev_dks(dict_of_vin):
 
 
 def camel_to_underscore(name):
+    LOGGER = logging.getLogger(__name__ + ".camel_to_underscore")
     return camel_pat.sub(lambda x: '_' + x.group(1).lower(), name)
 
 
 def underscore_to_camel(name):
+    LOGGER = logging.getLogger(__name__ + ".underscore_to_camel")
     return under_pat.sub(lambda x: x.group(1).upper(), name)
 
 
@@ -212,6 +224,7 @@ conf = config.DATABASE
 
 
 def list_detector(input_data):
+    LOGGER = logging.getLogger(__name__ + ".list_detector")
     new_data = {}
     if isinstance(input_data, list):
         try:
@@ -226,6 +239,7 @@ def list_detector(input_data):
 
 
 def list_detector_to_list(input_data):
+    LOGGER = logging.getLogger(__name__ + ".list_detector_to_list")
     if isinstance(input_data, list):
         new_data = []
         # data = [dict(record) for record in input_data]
@@ -244,6 +258,7 @@ def list_detector_to_list(input_data):
 
 
 async def get_setting(setting_name: str):
+    LOGGER = logging.getLogger(__name__ + ".get_setting")
     query = f"SELECT value FROM dc_base.settings WHERE setting_name = '{setting_name}'"
 
     async with AsyncDatabase(**conf) as db:
@@ -258,6 +273,7 @@ async def get_setting(setting_name: str):
 
 
 async def get_active_proxies(proxy_type: str):
+    LOGGER = logging.getLogger(__name__ + ".get_active_proxies")
     if proxy_type == "HTTPS":
         view_name = 'dc_base.https_active_proxies'
     elif proxy_type == 'SOCKS5':
@@ -278,6 +294,7 @@ async def get_active_proxies(proxy_type: str):
 
 
 async def find_vin_actual_dc(vin):
+    LOGGER = logging.getLogger(__name__ + ".find_vin_actual_dc")
     query = f"SELECT * FROM dc_base.dcs_actual WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
@@ -293,6 +310,7 @@ async def find_vin_actual_dc(vin):
 
 
 async def find_vin_canceled_dk(vin):
+    LOGGER = logging.getLogger(__name__ + ".find_vin_canceled_dk")
     query = f"SELECT * FROM dc_base.dcs_canceled WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
@@ -308,6 +326,7 @@ async def find_vin_canceled_dk(vin):
 
 
 async def find_vin_ended_dcs(vin):
+    LOGGER = logging.getLogger(__name__ + ".find_vin_ended_dcs")
     query = f"SELECT * FROM dc_base.dcs_ended WHERE vin = '{vin}'"
     # query = f"SELECT * FROM dcs WHERE vin = '{vin}'"
 
@@ -323,6 +342,7 @@ async def find_vin_ended_dcs(vin):
 
 
 async def get_vins_to_update():
+    LOGGER = logging.getLogger(__name__ + ".get_vins_to_update")
     # touched_at = config.touched_at
     query = "SELECT * FROM dc_base.vins_to_update"
     # query = f"select vin, created_at from dcs
@@ -340,6 +360,7 @@ async def get_vins_to_update():
 
 
 async def update_vin(dict_of_vin):
+    LOGGER = logging.getLogger(__name__ + ".update_vin")
     items_tuple = (
         dict_of_vin["vin"],
         dict_of_vin.get("model", ''),
@@ -355,6 +376,7 @@ async def update_vin(dict_of_vin):
 
 
 async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
+    LOGGER = logging.getLogger(__name__ + ".create_dc_for_vin")
     # LOGGER.info(f'{dict_of_vin["vin"]} SQL Insert...')
     await update_vin(dict_of_vin)
     items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
@@ -373,6 +395,7 @@ async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
 
 
 async def create_dc_for_vin_bulk(list_of_vins):
+    LOGGER = logging.getLogger(__name__ + ".create_dc_for_vin_bulk")
     items = []
     previous_dc_list = []
     for dict_of_vin in list_of_vins:
@@ -391,6 +414,7 @@ async def create_dc_for_vin_bulk(list_of_vins):
 
 
 async def create_vins(vins):
+    LOGGER = logging.getLogger(__name__ + ".create_vins")
     async with AsyncDatabase(**conf) as db:
         query = get_vins_add_query()
         data = await db.executemany(
@@ -404,6 +428,7 @@ async def create_vins(vins):
 
 
 async def touch_vin_at(vin_number: str):
+    LOGGER = logging.getLogger(__name__ + ".touch_vin_at")
     async with AsyncDatabase(**conf) as db:
         query = f"""
         UPDATE dc_base.vins
@@ -422,6 +447,7 @@ async def touch_vin_at(vin_number: str):
 
 
 async def update_vin_at(vin_number: str):
+    LOGGER = logging.getLogger(__name__ + ".update_vin_at")
     async with AsyncDatabase(**conf) as db:
         query = f"""
         UPDATE dc_base.vins
@@ -433,14 +459,15 @@ async def update_vin_at(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            LOGGER.debug(f'{vin_number} UPD updated')
+            LOGGER.debug(f'{vin_number} UPD updated', config.name)
             return True
         else:
-            LOGGER.error(f'{vin_number} UPD NOT updated')
+            LOGGER.error(f'{vin_number} UPD NOT updated', config.name)
             return False
 
 
 async def load_vins(filename: Path):
+    LOGGER = logging.getLogger(__name__ + ".load_vins")
     with open(filename, "r") as f:
         vins = f.read().split('\n')
     items_arr = []
@@ -465,6 +492,7 @@ async def load_vins(filename: Path):
 
 
 async def update_proxies(plist):
+    LOGGER = logging.getLogger(__name__ + ".update_proxies")
     count = 0
     values = []
     for item in plist:
@@ -497,6 +525,7 @@ async def update_proxies(plist):
 
 
 async def check_bg_tasks():
+    LOGGER = logging.getLogger(__name__ + ".check_bg_tasks")
     q = f"""select * from dc_base.bg_tasks where done is false"""
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(q)
@@ -510,6 +539,7 @@ async def check_bg_tasks():
 
 
 async def add_bg_task():
+    LOGGER = logging.getLogger(__name__ + ".add_bg_task")
     q = f"""insert into dc_base.bg_tasks (done) VALUES (false) returning *"""
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(q)
@@ -523,6 +553,7 @@ async def add_bg_task():
 
 
 async def done_bg_task(id):
+    LOGGER = logging.getLogger(__name__ + ".done_bg_task")
     q = f"""update dc_base.bg_tasks SET done=true where id = {id} returning *"""
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(q)
@@ -536,6 +567,7 @@ async def done_bg_task(id):
 
 
 async def last_upd_vin(vin_number: str):
+    LOGGER = logging.getLogger(__name__ + ".last_upd_vin")
     async with AsyncDatabase(**conf) as db:
         query = f"""
             UPDATE dc_base.vins
@@ -547,11 +579,8 @@ async def last_upd_vin(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            LOGGER.debug(f'{vin_number} LAST_UPD updated')
+            LOGGER.debug(f'{vin_number} LAST_UPD updated', config.name)
             return True
         else:
-            LOGGER.error(f'{vin_number} LAST_UPD NOT updated')
+            LOGGER.error(f'{vin_number} LAST_UPD NOT updated', config.name)
             return False
-
-
-None

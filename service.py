@@ -47,7 +47,7 @@ def q_dc(vin_code):
 
 def find_dc(vin_code):
     LOGGER = logging.getLogger(__name__ + ".find_dc")
-    LOGGER.info(f'Started parsing of [{vin_code}]')
+    LOGGER.info(f'Started parsing of [{vin_code}]', config.name)
     t1 = threading.Thread(target=parser.process_thread, args=([vin_code],), daemon=True)
     t1.start()
     t1.join()
@@ -70,7 +70,7 @@ async def update_proxies():
                        'https': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
-    LOGGER.info(len(config.proxies))
+    LOGGER.info(len(config.proxies), config.name)
     config.r_proxies = cycle(config.proxies)
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
