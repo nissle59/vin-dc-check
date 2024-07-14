@@ -172,7 +172,7 @@ def process_thread(vins: list):
                 try:
                     asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
                 except Exception as e:
-                    LOGGER.error("%s: " + e, config.name, exc_info=True)
+                    LOGGER.error("%s: " + str(e), config.name, exc_info=True)
                 vin = v.get_vin_code(vin['vin'])
                 try:
                     asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
@@ -189,7 +189,7 @@ def process_thread(vins: list):
                     v.proxy = next(config.r_proxies)
                 c += 1
             except Exception as e:
-                LOGGER.error("%s: " + e, config.name, exc_info=True)
+                LOGGER.error("%s: " + str(e), config.name, exc_info=True)
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
                 c += 1
@@ -246,7 +246,7 @@ def mulithreaded_processor(vins: list):
             dt_str = f'{length_of_vins_list} records: {int(dt_h)} hours {int(dt_m)} minutes {round(dt_s)} seconds passed'
         else:
             dt_str = f'{length_of_vins_list} records: {round(dt_diff)} seconds passed'
-        LOGGER.info("%s: " + dt_str, config.name)
+        LOGGER.info("%s: " + str(dt_str), config.name)
     else:
         LOGGER.info("%s: " + f'VINs list is empty. All VINs are up to date.', config.name)
 

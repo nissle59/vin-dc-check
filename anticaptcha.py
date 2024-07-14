@@ -26,16 +26,16 @@ class Anticaptcha():
             'body': b64image,
             'key': self.token
         }
-        # LOGGER.info("%s: " + data)
-        # LOGGER.info("%s: " + self.token)
+        # LOGGER.info("%s: " + str(data))
+        # LOGGER.info("%s: " + str(self.token))
         r = requests.post(self.uin, data=data)
         if r:
-            # LOGGER.info("%s: " + r.text)
+            # LOGGER.info("%s: " + str(r.text))
             buf = r.text.split('|')
             status = buf[0]
             self.id = buf[1]
-            # LOGGER.info("%s: " + r.text)
-            # LOGGER.info("%s: " + self.id)
+            # LOGGER.info("%s: " + str(r.text))
+            # LOGGER.info("%s: " + str(self.id))
             return self.id
         else:
             self.id = None
@@ -43,7 +43,7 @@ class Anticaptcha():
 
     def _resolve_request(self):
         LOGGER = logging.getLogger(__name__ + ".Anticaptcha--_resolve_request")
-        # LOGGER.info("%s: " + self.id)
+        # LOGGER.info("%s: " + str(self.id))
         if self.id:
             data = {
                 'action': 'get',
@@ -51,12 +51,12 @@ class Anticaptcha():
                 'key': self.token
             }
             r = requests.post(self.ures, data=data)
-            #LOGGER.info("%s: " + r.status_code)
+            # LOGGER.info("%s: " + str(r.status_code))
             if r:
                 buf = r.text.split('|')
                 status = buf[0]
                 result = buf[1]
-                #LOGGER.info("%s: " + r.text)
+                #LOGGER.info("%s: " + str(r.text))
                 if status == 'OK':
                     return result
                 else:
@@ -69,7 +69,7 @@ class Anticaptcha():
     def resolve_captcha(self, captchaImage:str):
         LOGGER = logging.getLogger(__name__ + ".Anticaptcha--resolve_captcha")
         r = self._init_request(captchaImage)
-        #LOGGER.info("%s: " + r)
+        #LOGGER.info("%s: " + str(r))
         if r:
             r = self._resolve_request()
             if r:

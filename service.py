@@ -70,7 +70,7 @@ async def update_proxies():
                        'https': f'http://{proxy["username"]}:{proxy["password"]}@{proxy["ip"]}:{str(proxy["port"])}'}
                       for proxy in
                       await sql_adapter.get_active_proxies('HTTPS')]
-    LOGGER.info("%s: " + len(config.proxies), config.name)
+    LOGGER.info("%s: " + str(len(config.proxies)), config.name)
     config.r_proxies = cycle(config.proxies)
     for i in range(random.randint(0, len(config.proxies))):
         next(config.r_proxies)
