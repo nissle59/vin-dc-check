@@ -170,7 +170,7 @@ def process_thread(vins: list):
                 try:
                     asyncio.run(sql_adapter.touch_vin_at(vin['vin']))
                 except Exception as e:
-                    LOGGER.debug(e)
+                    LOGGER.error(e, exc_info=True)
                 vin = v.get_vin_code(vin['vin'])
                 try:
                     asyncio.run(sql_adapter.create_dc_for_vin(vin[0], force))
@@ -187,7 +187,7 @@ def process_thread(vins: list):
                     v.proxy = next(config.r_proxies)
                 c += 1
             except Exception as e:
-                LOGGER.debug(e)
+                LOGGER.error(e, exc_info=True)
                 if v.proxy:
                     v.proxy = next(config.r_proxies)
                 c += 1
