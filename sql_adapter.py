@@ -330,12 +330,12 @@ async def get_vins_to_update():
 
     async with AsyncDatabase(**conf) as db:
         data = await db.fetch(query)
-        # config.logger.info(data)
+        # LOGGER.info(data)
         if data is None:
             return []
-        # config.logger.info(data)
+        # LOGGER.info(data)
         data = [{'vin': item['vin'], 'createdAt': item['createdAt']} for item in list_detector_to_list(data)]
-        # config.logger.info(data)
+        # LOGGER.info(data)
         return data
 
 
@@ -355,7 +355,7 @@ async def update_vin(dict_of_vin):
 
 
 async def create_dc_for_vin(dict_of_vin, force_rewrite=False):
-    # config.logger.info(f'{dict_of_vin["vin"]} SQL Insert...')
+    # LOGGER.info(f'{dict_of_vin["vin"]} SQL Insert...')
     await update_vin(dict_of_vin)
     items_tuple = set_items_tuple_create_dc_record(dict_of_vin, execute_many_flag=False)
     query = get_insert_query(force_rewrite)
@@ -414,10 +414,10 @@ async def touch_vin_at(vin_number: str):
             query
         )
         if data is not None:
-            # config.logger.info(f'{vin_number} touch updated')
+            # LOGGER.info(f'{vin_number} touch updated')
             return True
         else:
-            #config.logger.error(f'{vin_number} touch NOT updated')
+            # LOGGER.error(f'{vin_number} touch NOT updated')
             return False
 
 
@@ -433,10 +433,10 @@ async def update_vin_at(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            config.logger.debug(f'{vin_number} UPD updated')
+            LOGGER.debug(f'{vin_number} UPD updated')
             return True
         else:
-            config.logger.error(f'{vin_number} UPD NOT updated')
+            LOGGER.error(f'{vin_number} UPD NOT updated')
             return False
 
 
@@ -547,10 +547,10 @@ async def last_upd_vin(vin_number: str):
             (vin_number,)
         )
         if data is not None:
-            config.logger.debug(f'{vin_number} LAST_UPD updated')
+            LOGGER.debug(f'{vin_number} LAST_UPD updated')
             return True
         else:
-            config.logger.error(f'{vin_number} LAST_UPD NOT updated')
+            LOGGER.error(f'{vin_number} LAST_UPD NOT updated')
             return False
 
 

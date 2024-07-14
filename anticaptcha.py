@@ -1,10 +1,13 @@
+import logging
 import time
 
 import requests
 
+LOGGER = logging.getLogger(__name__)
 
 class Anticaptcha():
     def __init__(self, url ='http://90.188.15.14:9085', token = 'e9e783d3e52abd6101fc807ab1109400'):
+        LOGGER = logging.getLogger(__name__ + ".Anticaptcha--init")
         self.url = url
         self.uin = self.url + '/in.php'
         self.ures = self.url + '/res.php'
@@ -17,28 +20,30 @@ class Anticaptcha():
         })
 
     def _init_request(self, b64image:str):
+        LOGGER = logging.getLogger(__name__ + ".Anticaptcha--_init_request")
         data = {
             'method':'base64',
             'body': b64image,
             'key': self.token
         }
-        # config.logger.info(data)
-        # config.logger.info(self.token)
+        # LOGGER.info(data)
+        # LOGGER.info(self.token)
         r = requests.post(self.uin, data=data)
         if r:
-            # config.logger.info(r.text)
+            # LOGGER.info(r.text)
             buf = r.text.split('|')
             status = buf[0]
             self.id = buf[1]
-            # config.logger.info(r.text)
-            #config.logger.info(self.id)
+            # LOGGER.info(r.text)
+            # LOGGER.info(self.id)
             return self.id
         else:
             self.id = None
             return None
 
     def _resolve_request(self):
-        #config.logger.info(self.id)
+        LOGGER = logging.getLogger(__name__ + ".Anticaptcha--_resolve_request")
+        #LOGGER.info(self.id)
         if self.id:
             data = {
                 'action': 'get',
@@ -46,12 +51,12 @@ class Anticaptcha():
                 'key': self.token
             }
             r = requests.post(self.ures, data=data)
-            #config.logger.info(r.status_code)
+            #LOGGER.info(r.status_code)
             if r:
                 buf = r.text.split('|')
                 status = buf[0]
                 result = buf[1]
-                #config.logger.info(r.text)
+                #LOGGER.info(r.text)
                 if status == 'OK':
                     return result
                 else:
@@ -62,8 +67,9 @@ class Anticaptcha():
                 return None
 
     def resolve_captcha(self, captchaImage:str):
+        LOGGER = logging.getLogger(__name__ + ".Anticaptcha--resolve_captcha")
         r = self._init_request(captchaImage)
-        #config.logger.info(r)
+        #LOGGER.info(r)
         if r:
             r = self._resolve_request()
             if r:
