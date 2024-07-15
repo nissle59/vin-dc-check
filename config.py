@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 # from rq import Queue, Worker
 
 DATABASE = {
-    'host': 'db.local',
+    'host': 'pg.db.services.local',
     'port': 5432,
     'user': 'postgres',
     'pswd': 'psqlpass',
