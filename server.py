@@ -2,7 +2,6 @@ import datetime
 import json
 import logging
 import random
-
 import requests
 from fastapi import FastAPI, responses, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -106,7 +105,7 @@ async def mdc(background_tasks: BackgroundTasks, use_proxy=True):
                 LOGGER.error("%s: " + 'Парсер VIN обрабатывает задачу уже 8 часов!! Сброс задачи', config.name)
                 await sql_adapter.done_bg_task(bg_task['id'])
                 requests.post(
-                    url="http://10.8.0.5:2375/v1.24/containers/parser_vin_dc_gibdd/restart"
+                    url="http://10.8.0.5:2375/v1.24/containers/parsers-dc-gibdd/restart"
                 )
             d['bg_tasks'].append(
                 {
@@ -317,60 +316,3 @@ async def upd_prx():
             media_type='application/json'
         )
 
-# @app.get("/qDc")
-# async def qdc(vin):
-#     LOGGER = logging.getLogger(__name__ + ".qDc")
-#     job = config.queue.enqueue(service.queue_dc, vin, timeout=3600)
-#     # print(job.__dict__)
-#
-#     res = json.dumps(
-#         {"status": "success", "job": job.id, "jobCreatedAt": job.created_at},
-#         ensure_ascii=False,
-#         indent=2,
-#         sort_keys=True,
-#         default=str
-#     )
-#     err = {"status": "error"}
-#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
-#
-#     if res:
-#         return responses.Response(
-#             content=res,
-#             status_code=200,
-#             media_type='application/json'
-#         )
-#
-#     else:
-#         return responses.Response(
-#             content=err,
-#             status_code=500,
-#             media_type='application/json'
-#         )
-
-# @app.get("/qFindDc")
-# async def qdc_all():
-#     jobs = [{"id": job.id, "jobCreatedAt": job.created_at} for job in await service.queue_dc_all()]
-#
-#     res = json.dumps(
-#         {"status": "success", "jobs": jobs},
-#         ensure_ascii=False,
-#         indent=2,
-#         sort_keys=True,
-#         default=str
-#     )
-#     err = {"status": "error"}
-#     err = json.dumps(err, indent=4, sort_keys=True, default=str)
-#
-#     if res:
-#         return responses.Response(
-#             content=res,
-#             status_code=200,
-#             media_type='application/json'
-#         )
-#
-#     else:
-#         return responses.Response(
-#             content=err,
-#             status_code=500,
-#             media_type='application/json'
-#         )
